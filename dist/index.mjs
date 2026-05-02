@@ -63032,6 +63032,7 @@ var openai2 = new OpenAI({
 
 // src/routes/sk/index.ts
 var AI_MODEL = isGroq ? "llama-3.3-70b-versatile" : "gpt-4o";
+var AI_MODEL_FAST = isGroq ? "llama-3.1-8b-instant" : "gpt-4o-mini";
 var router2 = (0, import_express2.Router)();
 var SK_SYSTEM_PROMPT = `You are [SK], a highly intelligent, warm, and expressive AI assistant. \u{1F916}\u2728
 
@@ -63214,48 +63215,35 @@ router2.post("/webhook", async (req, res) => {
     const body = req.body;
     const senderRaw = body.sender || body.from || body.phone || body.number || "unknown";
     const userMessage = body.message || body.msg || body.text || body.body || "";
-    const contactName = body.name || body.contact || senderRaw;
     if (!userMessage.trim()) {
       res.status(200).send("Sorry, I didn't receive your message. Please try again! \u{1F60A}");
       return;
     }
     const sender = senderRaw.replace(/\D/g, "").slice(-12) || senderRaw;
-    const existing = await db.select().from(conversations).where(eq(conversations.title, `WA:${sender}`));
-    let convId;
-    if (existing.length > 0) {
-      convId = existing[0].id;
-    } else {
+    const convPromise = (async () => {
+      const existing = await db.select().from(conversations).where(eq(conversations.title, `WA:${sender}`));
+      if (existing.length > 0) return existing[0].id;
       const [created] = await db.insert(conversations).values({ title: `WA:${sender}` }).returning();
-      convId = created.id;
-    }
-    const history = await db.select().from(messages).where(eq(messages.conversationId, convId)).orderBy(messages.createdAt);
-    const chatMessages = [
-      { role: "system", content: SK_SYSTEM_PROMPT },
-      ...history.map((m) => ({
-        role: m.role,
-        content: m.content
-      })),
-      { role: "user", content: userMessage }
-    ];
-    await db.insert(messages).values({
-      conversationId: convId,
-      role: "user",
-      content: userMessage
-    });
-    const completion = await openai.chat.completions.create({
-      model: AI_MODEL,
-      max_tokens: 1024,
-      messages: chatMessages,
+      return created.id;
+    })();
+    const aiPromise = openai.chat.completions.create({
+      model: AI_MODEL_FAST,
+      max_tokens: 512,
+      messages: [
+        { role: "system", content: SK_SYSTEM_PROMPT },
+        { role: "user", content: userMessage }
+      ],
       stream: false
     });
+    const [convId, completion] = await Promise.all([convPromise, aiPromise]);
     const reply = completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response. \u{1F614}";
-    await db.insert(messages).values({
-      conversationId: convId,
-      role: "assistant",
-      content: reply
-    });
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     res.status(200).send(reply);
+    db.insert(messages).values([
+      { conversationId: convId, role: "user", content: userMessage },
+      { conversationId: convId, role: "assistant", content: reply }
+    ]).catch(() => {
+    });
   } catch (err) {
     req.log.error(err, "WA webhook error");
     res.status(200).send("SK AI is temporarily unavailable. Please try again later! \u{1F64F}");
@@ -63270,6 +63258,8 @@ import http from "http";
 var router3 = (0, import_express3.Router)();
 var AI_BASE = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || "";
 var PROXY_SECRET = process.env.PROXY_SECRET || process.env.SESSION_SECRET || "";
+var httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
+var httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
 function handleProxy(req, res) {
   const incomingKey = req.headers["authorization"]?.replace("Bearer ", "") || "";
   if (PROXY_SECRET && incomingKey !== "_DUMMY_API_KEY_" && incomingKey !== PROXY_SECRET) {
@@ -63284,16 +63274,19 @@ function handleProxy(req, res) {
   const targetUrl = new URL(targetPath);
   const isHttps = targetUrl.protocol === "https:";
   const lib = isHttps ? https : http;
+  const agent = isHttps ? httpsAgent : httpAgent;
   const body = JSON.stringify(req.body);
   const options = {
     hostname: targetUrl.hostname,
     port: targetUrl.port || (isHttps ? 443 : 80),
     path: targetUrl.pathname + (targetUrl.search || ""),
     method: "POST",
+    agent,
     headers: {
       "Content-Type": "application/json",
       "Content-Length": Buffer.byteLength(body),
-      Authorization: `Bearer _DUMMY_API_KEY_`
+      Authorization: `Bearer _DUMMY_API_KEY_`,
+      Connection: "keep-alive"
     }
   };
   const proxyReq = lib.request(options, (proxyRes) => {
