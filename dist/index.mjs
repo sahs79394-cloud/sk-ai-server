@@ -63052,12 +63052,8 @@ function getPollinationsReply(userMessage) {
       res.on("data", (c) => data += c);
       res.on("end", () => {
         const text2 = data.trim();
-        if (!text2) {
-          reject(new Error("empty"));
-          return;
-        }
-        if (text2.includes('"status":429') || text2.includes("Queue full") || text2.startsWith("<!")) {
-          reject(new Error("rate_limited"));
+        if (!text2 || text2.startsWith("<!") || text2.includes("Queue full") || text2.includes('"status":429') || text2.includes('"status":400')) {
+          reject(new Error("unavailable"));
           return;
         }
         if (text2.startsWith("{")) {
@@ -63072,12 +63068,36 @@ function getPollinationsReply(userMessage) {
       });
     });
     req.on("error", reject);
-    req.setTimeout(12e3, () => {
+    req.setTimeout(8e3, () => {
       req.destroy();
       reject(new Error("timeout"));
     });
     req.end();
   });
+}
+function getSmartFallback(userMessage) {
+  const m = userMessage.toLowerCase();
+  if (/^(hi+|hello|hey|hii+|helo|hai|hy)\b/.test(m))
+    return "Hello! \u{1F60A} Main SK hoon \u2014 Mr. Suraj Sir ka AI assistant! Batao kya madad chahiye? \u{1F31F}";
+  if (/(namaste|namaskar|salam|salaam|assalam|adab)/.test(m))
+    return "Namaste! \u{1F64F}\u{1F60A} Main SK hoon, Mr. Suraj Sir ka AI assistant. Aapki seva mein hazir hoon! Kya poochna chahte hain? \u2728";
+  if (/(kya haal|kaisa hai|kaise ho|how are|whatsup|what.s up|wassup|sup\b)/.test(m))
+    return "Main bilkul badhiya hoon! \u{1F604}\u{1F680} Shukriya poochne ke liye! Aap sunao \u2014 kya chal raha hai? Main madad ke liye ready hoon! \u{1F4AA}";
+  if (/(kaun ho|who are you|tum kaun|aap kaun|apna parichay|introduce)/.test(m))
+    return "Main SK hoon! \u{1F916}\u2728 Ek AI assistant jo Mr. Suraj Sir ne banaya hai. Main aapke sawalon ka jawab dene, madad karne aur conversations karne ke liye yahaan hoon! Poochho kuch bhi \u{1F60A}";
+  if (/(kya kar sakte|kya karte|what can you|help me|madad karo|help karo)/.test(m))
+    return "Main bahut kuch kar sakta hoon! \u{1F60A}\u2728\n\u2022 Sawalo ke jawab\n\u2022 Photos analyze\n\u2022 Hindi/English/Urdu mein baat\n\u2022 Koi bhi topic pe discuss\nBas poochho! \u{1F680}";
+  if (/(thanks|thank you|shukriya|dhanyawad|meherbani|shukar)/.test(m))
+    return "Bahut bahut shukriya! \u{1F60A}\u{1F64F} Main hamesha aapki madad ke liye yahaan hoon. Aur kuch chahiye to batao! \u2728";
+  if (/(bye|goodbye|alvida|khuda hafiz|take care|ok bye)/.test(m))
+    return "Alvida! \u{1F44B}\u{1F60A} Jab bhi zaroorat ho wapis aana, main hamesha yahaan hoon! Allah Hafiz! \u{1F31F}";
+  if (/(good morning|subah bakhair|suprabhat|gm\b)/.test(m))
+    return "Good Morning! \u{1F305}\u{1F60A} Aaj ka din bahut accha ho aapka! Main SK hoon \u2014 aapki koi madad kar sakta hoon? \u2600\uFE0F";
+  if (/(good night|shab bakhair|good evening|goodnight)/.test(m))
+    return "Good Night! \u{1F319}\u{1F60A} Meethi neend lena! Kal phir milenge! Main hamesha yahaan hoon aapke liye! \u{1F4AB}";
+  if (/(photo|image|picture|pic\b|tasveer)/.test(m))
+    return "Photo bhejiye! \u{1F4F8}\u{1F60A} Main use dekh kar analysis karunga aur bataunga kya hai! Main images samajh sakta hoon! \u{1F50D}";
+  return "Main SK hoon! \u{1F60A}\u{1F916} Aapka message mila. Aapka sawaal thoda detail mein batao toh main aur achha jawab de sakta hoon! \u2728";
 }
 var router2 = (0, import_express2.Router)();
 var SK_SYSTEM_PROMPT = `You are [SK], a highly intelligent, warm, and expressive AI assistant. \u{1F916}\u2728
@@ -63272,8 +63292,8 @@ router2.post("/webhook", async (req, res) => {
       const [created] = await db.insert(conversations).values({ title: `WA:${sender}` }).returning();
       return created.id;
     })();
-    const aiPromise = getPollinationsReply(userMessage).catch(
-      () => openai.chat.completions.create({
+    const aiPromise = getPollinationsReply(userMessage).catch(() => {
+      return openai.chat.completions.create({
         model: AI_MODEL_FAST,
         max_tokens: 512,
         messages: [
@@ -63281,10 +63301,10 @@ router2.post("/webhook", async (req, res) => {
           { role: "user", content: userMessage }
         ],
         stream: false
-      }).then((c) => c.choices[0]?.message?.content ?? "")
-    );
+      }).then((c) => c.choices[0]?.message?.content ?? "").catch(() => getSmartFallback(userMessage));
+    });
     const [convId, reply] = await Promise.all([convPromise, aiPromise]);
-    const finalReply = reply.trim() || "Sorry, I couldn't generate a response. \u{1F614}";
+    const finalReply = (typeof reply === "string" ? reply : "").trim() || getSmartFallback(userMessage);
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     res.status(200).send(finalReply);
     db.insert(messages).values([
