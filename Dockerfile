@@ -1,14 +1,15 @@
-FROM node:24-slim
+FROM node:22-slim
 
 WORKDIR /app
 
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10
 
 COPY pnpm-workspace.yaml ./
 COPY package.json ./
 COPY pnpm-lock.yaml ./
 COPY tsconfig.json ./
 COPY tsconfig.base.json ./
+COPY .npmrc ./
 
 COPY lib/db ./lib/db
 COPY lib/api-zod ./lib/api-zod
@@ -18,7 +19,7 @@ COPY lib/integrations-openai-ai-server ./lib/integrations-openai-ai-server
 COPY artifacts/api-server ./artifacts/api-server
 COPY scripts ./scripts
 
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 RUN pnpm --filter @workspace/api-server run build
 
@@ -27,4 +28,4 @@ EXPOSE 8080
 ENV PORT=8080
 ENV NODE_ENV=production
 
-CMD ["node", "--enable-source-maps", "./artifacts/api-server/dist/index.mjs"]
+CMD ["node", "--enable-source-maps", "/app/artifacts/api-server/dist/index.mjs"]
