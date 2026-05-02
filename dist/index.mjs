@@ -63052,15 +63052,22 @@ function getPollinationsReply(userMessage) {
       res.on("data", (c) => data += c);
       res.on("end", () => {
         const text2 = data.trim();
-        if (!text2 || text2.startsWith("<!") || text2.includes("Queue full") || text2.includes('"status":429') || text2.includes('"status":400')) {
+        if (!text2 || text2.startsWith("<!")) {
           reject(new Error("unavailable"));
           return;
         }
         if (text2.startsWith("{")) {
           try {
-            resolve(JSON.parse(text2)?.choices?.[0]?.message?.content ?? text2);
+            const j = JSON.parse(text2);
+            if (j.error || j.status === 429 || j.status === 400 || j.status === 418) {
+              reject(new Error("unavailable"));
+              return;
+            }
+            const content = j?.choices?.[0]?.message?.content;
+            if (content) resolve(content);
+            else reject(new Error("no content"));
           } catch {
-            resolve(text2);
+            reject(new Error("parse error"));
           }
         } else {
           resolve(text2);
