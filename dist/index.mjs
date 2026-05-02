@@ -63196,6 +63196,58 @@ router2.post("/conversations/:id/messages", async (req, res) => {
     }
   }
 });
+router2.post("/webhook", async (req, res) => {
+  try {
+    const body = req.body;
+    const senderRaw = body.sender || body.from || body.phone || body.number || "unknown";
+    const userMessage = body.message || body.msg || body.text || body.body || "";
+    const contactName = body.name || body.contact || senderRaw;
+    if (!userMessage.trim()) {
+      res.status(200).send("Sorry, I didn't receive your message. Please try again! \u{1F60A}");
+      return;
+    }
+    const sender = senderRaw.replace(/\D/g, "").slice(-12) || senderRaw;
+    const existing = await db.select().from(conversations).where(eq(conversations.title, `WA:${sender}`));
+    let convId;
+    if (existing.length > 0) {
+      convId = existing[0].id;
+    } else {
+      const [created] = await db.insert(conversations).values({ title: `WA:${sender}` }).returning();
+      convId = created.id;
+    }
+    const history = await db.select().from(messages).where(eq(messages.conversationId, convId)).orderBy(messages.createdAt);
+    const chatMessages = [
+      { role: "system", content: SK_SYSTEM_PROMPT },
+      ...history.map((m) => ({
+        role: m.role,
+        content: m.content
+      })),
+      { role: "user", content: userMessage }
+    ];
+    await db.insert(messages).values({
+      conversationId: convId,
+      role: "user",
+      content: userMessage
+    });
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      max_tokens: 1024,
+      messages: chatMessages,
+      stream: false
+    });
+    const reply = completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response. \u{1F614}";
+    await db.insert(messages).values({
+      conversationId: convId,
+      role: "assistant",
+      content: reply
+    });
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.status(200).send(reply);
+  } catch (err) {
+    req.log.error(err, "WA webhook error");
+    res.status(200).send("SK AI is temporarily unavailable. Please try again later! \u{1F64F}");
+  }
+});
 var sk_default = router2;
 
 // src/routes/index.ts
