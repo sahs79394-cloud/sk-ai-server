@@ -63037,7 +63037,7 @@ var openai2 = new OpenAI({
 var AI_MODEL = isGroq ? "llama-3.3-70b-versatile" : "gpt-4o";
 var AI_MODEL_FAST = isGroq ? "llama-3.1-8b-instant" : "gpt-4o-mini";
 var SK_SHORT_PROMPT = "You are SK, a friendly AI assistant made by Mr. Suraj Sir. Reply warmly with emojis in the same language the user writes in. Be helpful and concise.";
-function getPollinationsReply(userMessage) {
+function pollinationsOnce(userMessage) {
   return new Promise((resolve, reject) => {
     const prompt = encodeURIComponent(userMessage);
     const system = encodeURIComponent(SK_SHORT_PROMPT);
@@ -63053,17 +63053,33 @@ function getPollinationsReply(userMessage) {
       res.on("data", (chunk) => data += chunk);
       res.on("end", () => {
         const text2 = data.trim();
-        if (text2) resolve(text2);
-        else reject(new Error("Empty Pollinations response"));
+        if (text2.includes('"error"') && text2.includes("429")) {
+          reject(new Error("rate_limited"));
+          return;
+        }
+        if (text2 && !text2.startsWith("{")) resolve(text2);
+        else if (text2) resolve(JSON.parse(text2)?.choices?.[0]?.message?.content || text2);
+        else reject(new Error("Empty response"));
       });
     });
     req.on("error", reject);
-    req.setTimeout(12e3, () => {
+    req.setTimeout(11e3, () => {
       req.destroy();
-      reject(new Error("Pollinations timeout"));
+      reject(new Error("timeout"));
     });
     req.end();
   });
+}
+async function getPollinationsReply(userMessage) {
+  try {
+    return await pollinationsOnce(userMessage);
+  } catch (err) {
+    if (err instanceof Error && err.message === "rate_limited") {
+      await new Promise((r) => setTimeout(r, 3e3));
+      return pollinationsOnce(userMessage);
+    }
+    throw err;
+  }
 }
 var router2 = (0, import_express2.Router)();
 var SK_SYSTEM_PROMPT = `You are [SK], a highly intelligent, warm, and expressive AI assistant. \u{1F916}\u2728
