@@ -40739,6 +40739,9 @@ function mapRelationalRow(tablesConfig, tableConfig, row, buildQueryResultSelect
   return result;
 }
 
+// src/routes/sk/index.ts
+import https from "https";
+
 // ../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/esm/index.mjs
 var import_lib = __toESM(require_lib5(), 1);
 var Client = import_lib.default.Client;
@@ -63033,6 +63036,34 @@ var openai2 = new OpenAI({
 // src/routes/sk/index.ts
 var AI_MODEL = isGroq ? "llama-3.3-70b-versatile" : "gpt-4o";
 var AI_MODEL_FAST = isGroq ? "llama-3.1-8b-instant" : "gpt-4o-mini";
+function getPollinationsReply(userMessage, systemPrompt) {
+  return new Promise((resolve, reject) => {
+    const prompt = encodeURIComponent(userMessage);
+    const system = encodeURIComponent(systemPrompt);
+    const path2 = `/openai/${prompt}?model=openai&system=${system}&seed=42&json=false`;
+    const options = {
+      hostname: "text.pollinations.ai",
+      path: path2,
+      method: "GET",
+      headers: { "User-Agent": "SK-AI-Server/1.0" }
+    };
+    const req = https.request(options, (res) => {
+      let data = "";
+      res.on("data", (chunk) => data += chunk);
+      res.on("end", () => {
+        const text2 = data.trim();
+        if (text2) resolve(text2);
+        else reject(new Error("Empty Pollinations response"));
+      });
+    });
+    req.on("error", reject);
+    req.setTimeout(12e3, () => {
+      req.destroy();
+      reject(new Error("Pollinations timeout"));
+    });
+    req.end();
+  });
+}
 var router2 = (0, import_express2.Router)();
 var SK_SYSTEM_PROMPT = `You are [SK], a highly intelligent, warm, and expressive AI assistant. \u{1F916}\u2728
 
@@ -63226,22 +63257,24 @@ router2.post("/webhook", async (req, res) => {
       const [created] = await db.insert(conversations).values({ title: `WA:${sender}` }).returning();
       return created.id;
     })();
-    const aiPromise = openai.chat.completions.create({
-      model: AI_MODEL_FAST,
-      max_tokens: 512,
-      messages: [
-        { role: "system", content: SK_SYSTEM_PROMPT },
-        { role: "user", content: userMessage }
-      ],
-      stream: false
-    });
-    const [convId, completion] = await Promise.all([convPromise, aiPromise]);
-    const reply = completion.choices[0]?.message?.content || "Sorry, I couldn't generate a response. \u{1F614}";
+    const aiPromise = getPollinationsReply(userMessage, SK_SYSTEM_PROMPT).catch(
+      () => openai.chat.completions.create({
+        model: AI_MODEL_FAST,
+        max_tokens: 512,
+        messages: [
+          { role: "system", content: SK_SYSTEM_PROMPT },
+          { role: "user", content: userMessage }
+        ],
+        stream: false
+      }).then((c) => c.choices[0]?.message?.content ?? "")
+    );
+    const [convId, reply] = await Promise.all([convPromise, aiPromise]);
+    const finalReply = reply.trim() || "Sorry, I couldn't generate a response. \u{1F614}";
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.status(200).send(reply);
+    res.status(200).send(finalReply);
     db.insert(messages).values([
       { conversationId: convId, role: "user", content: userMessage },
-      { conversationId: convId, role: "assistant", content: reply }
+      { conversationId: convId, role: "assistant", content: finalReply }
     ]).catch(() => {
     });
   } catch (err) {
@@ -63253,12 +63286,12 @@ var sk_default = router2;
 
 // src/routes/ai-proxy.ts
 var import_express3 = __toESM(require_express2(), 1);
-import https from "https";
+import https2 from "https";
 import http from "http";
 var router3 = (0, import_express3.Router)();
 var AI_BASE = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || "";
 var PROXY_SECRET = process.env.PROXY_SECRET || process.env.SESSION_SECRET || "";
-var httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
+var httpsAgent = new https2.Agent({ keepAlive: true, maxSockets: 10 });
 var httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
 function handleProxy(req, res) {
   const incomingKey = req.headers["authorization"]?.replace("Bearer ", "") || "";
@@ -63273,7 +63306,7 @@ function handleProxy(req, res) {
   const targetPath = AI_BASE.replace(/\/$/, "") + req.path;
   const targetUrl = new URL(targetPath);
   const isHttps = targetUrl.protocol === "https:";
-  const lib = isHttps ? https : http;
+  const lib = isHttps ? https2 : http;
   const agent = isHttps ? httpsAgent : httpAgent;
   const body = JSON.stringify(req.body);
   const options = {
