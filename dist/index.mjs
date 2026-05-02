@@ -63041,7 +63041,7 @@ function getPollinationsReply(userMessage) {
   return new Promise((resolve, reject) => {
     const prompt = encodeURIComponent(userMessage);
     const system = encodeURIComponent(SK_SHORT_PROMPT);
-    const path2 = `/${prompt}?model=openai&system=${system}&seed=${Date.now()}&json=false`;
+    const path2 = `/${prompt}?model=openai&system=${system}&seed=${Math.floor(Math.random() * 2147483647)}&json=false`;
     const req = https.request({
       hostname: "text.pollinations.ai",
       path: path2,
