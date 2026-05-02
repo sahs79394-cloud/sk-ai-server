@@ -63068,6 +63068,24 @@ router2.post("/conversations", async (req, res) => {
     res.status(500).json({ error: "Failed to create conversation" });
   }
 });
+router2.get("/conversations/:id", async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      res.status(400).json({ error: "Invalid conversation id" });
+      return;
+    }
+    const [conv] = await db.select().from(conversations).where(eq(conversations.id, id));
+    if (!conv) {
+      res.status(404).json({ error: "Conversation not found" });
+      return;
+    }
+    res.json(conv);
+  } catch (err) {
+    req.log.error(err, "Failed to get conversation");
+    res.status(500).json({ error: "Failed to get conversation" });
+  }
+});
 router2.delete("/conversations/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
