@@ -63036,10 +63036,11 @@ var openai2 = new OpenAI({
 // src/routes/sk/index.ts
 var AI_MODEL = isGroq ? "llama-3.3-70b-versatile" : "gpt-4o";
 var AI_MODEL_FAST = isGroq ? "llama-3.1-8b-instant" : "gpt-4o-mini";
-function getPollinationsReply(userMessage, systemPrompt) {
+var SK_SHORT_PROMPT = "You are SK, a friendly AI assistant made by Mr. Suraj Sir. Reply warmly with emojis in the same language the user writes in. Be helpful and concise.";
+function getPollinationsReply(userMessage) {
   return new Promise((resolve, reject) => {
     const prompt = encodeURIComponent(userMessage);
-    const system = encodeURIComponent(systemPrompt);
+    const system = encodeURIComponent(SK_SHORT_PROMPT);
     const path2 = `/openai/${prompt}?model=openai&system=${system}&seed=42&json=false`;
     const options = {
       hostname: "text.pollinations.ai",
@@ -63257,7 +63258,7 @@ router2.post("/webhook", async (req, res) => {
       const [created] = await db.insert(conversations).values({ title: `WA:${sender}` }).returning();
       return created.id;
     })();
-    const aiPromise = getPollinationsReply(userMessage, SK_SYSTEM_PROMPT).catch(
+    const aiPromise = getPollinationsReply(userMessage).catch(
       () => openai.chat.completions.create({
         model: AI_MODEL_FAST,
         max_tokens: 512,
