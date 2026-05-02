@@ -1,0 +1,190 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: sk
+    description: SK AI operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /sk/conversations:
+    get:
+      operationId: listSkConversations
+      tags: [sk]
+      summary: List all conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SkConversation"
+    post:
+      operationId: createSkConversation
+      tags: [sk]
+      summary: Create a new conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSkConversationBody"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SkConversation"
+  /sk/conversations/{id}:
+    delete:
+      operationId: deleteSkConversation
+      tags: [sk]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteSkConversationResponse"
+  /sk/conversations/{id}/messages:
+    get:
+      operationId: listSkMessages
+      tags: [sk]
+      summary: Get all messages in a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SkMessage"
+    post:
+      operationId: sendSkMessage
+      tags: [sk]
+      summary: Send a message to SK AI (streaming SSE)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendSkMessageBody"
+      responses:
+        "200":
+          description: Streaming SSE response
+          content:
+            text/event-stream:
+              schema:
+                type: string
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    SkConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - createdAt
+    CreateSkConversationBody:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+    DeleteSkConversationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+    SkMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        conversationId:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - conversationId
+        - role
+        - content
+        - createdAt
+    SendSkMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+        imageBase64:
+          type: string
+          description: Optional base64-encoded image for vision analysis
+        imageMediaType:
+          type: string
+          description: MIME type of the image (e.g. image/jpeg, image/png)
+      required:
+        - content
