@@ -2,7 +2,8 @@ FROM node:22-slim
 
 WORKDIR /app
 
-RUN npm install -g pnpm@10
+# Install pnpm via corepack (avoids npm preinstall hook)
+RUN corepack enable && corepack prepare pnpm@10 --activate
 
 COPY pnpm-workspace.yaml ./
 COPY package.json ./
