@@ -164,8 +164,8 @@ router.post("/conversations/:id/messages", async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
 
     const stream = await openai.chat.completions.create({
-      model: "gpt-5.2",
-      max_completion_tokens: 8192,
+      model: "gpt-4o",
+      max_tokens: 8192,
       messages: chatMessages,
       stream: true,
     });
