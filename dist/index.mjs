@@ -62993,14 +62993,26 @@ OpenAI.Skills = Skills;
 OpenAI.Videos = Videos;
 
 // ../../lib/integrations-openai-ai-server/src/client.ts
-var baseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || "https://api.openai.com/v1";
-var apiKey = process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
-if (!apiKey) {
+var groqKey = process.env.GROQ_API_KEY;
+var openaiKey = process.env.OPENAI_API_KEY || process.env.AI_INTEGRATIONS_OPENAI_API_KEY;
+var apiKey;
+var baseURL;
+if (groqKey) {
+  apiKey = groqKey;
+  baseURL = "https://api.groq.com/openai/v1";
+} else if (openaiKey && openaiKey !== "_DUMMY_API_KEY_") {
+  apiKey = openaiKey;
+  baseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || "https://api.openai.com/v1";
+} else if (process.env.AI_INTEGRATIONS_OPENAI_BASE_URL && openaiKey) {
+  apiKey = openaiKey;
+  baseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
+} else {
   throw new Error(
-    "No OpenAI API key found. Set OPENAI_API_KEY or AI_INTEGRATIONS_OPENAI_API_KEY."
+    "No AI API key found. Set GROQ_API_KEY (free: console.groq.com) or OPENAI_API_KEY."
   );
 }
 var openai = new OpenAI({ apiKey, baseURL });
+var isGroq = !!groqKey;
 
 // ../../lib/integrations-openai-ai-server/src/image/client.ts
 if (!process.env.AI_INTEGRATIONS_OPENAI_BASE_URL) {
@@ -63019,6 +63031,7 @@ var openai2 = new OpenAI({
 });
 
 // src/routes/sk/index.ts
+var AI_MODEL = isGroq ? "llama-3.3-70b-versatile" : "gpt-4o";
 var router2 = (0, import_express2.Router)();
 var SK_SYSTEM_PROMPT = `You are [SK], a highly intelligent, warm, and expressive AI assistant. \u{1F916}\u2728
 
@@ -63160,7 +63173,7 @@ router2.post("/conversations/:id/messages", async (req, res) => {
     res.setHeader("Connection", "keep-alive");
     res.setHeader("Access-Control-Allow-Origin", "*");
     const stream = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: AI_MODEL,
       max_tokens: 8192,
       messages: chatMessages,
       stream: true
@@ -63230,7 +63243,7 @@ router2.post("/webhook", async (req, res) => {
       content: userMessage
     });
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: AI_MODEL,
       max_tokens: 1024,
       messages: chatMessages,
       stream: false
