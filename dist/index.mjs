@@ -24668,17 +24668,19 @@ async function getAIReply(userMessage) {
   } catch {
   }
   const isCreative = /\b(poem|shayari|story|kahani|joke|mazak|likho|likh|bana|banao|write|create|compose|geet|song|rap|nazm|doha)\b/i.test(userMessage);
+  const isCode = /\b(code|program|script|function|algorithm|fibonacci|sorting|array|loop|class|object|debug|error|syntax|python|javascript|java|c\+\+|html|css|sql|query|api|server|backend|frontend)\b/i.test(userMessage);
+  const isAdvice = /\b(tips|trick|tarika|kaise karen|kaise kare|batao|help|advice|suggest|improve|increase|decrease|lose weight|gain|boost|reduce|career|study|padhai|naukri|job|relationship|motivation)\b/i.test(userMessage);
   try {
     const r = await getPollinationsReply(userMessage);
     if (r && r.length > 4) return r;
   } catch {
-    try {
-      const r2 = await getPollinationsReply(userMessage);
-      if (r2 && r2.length > 4) return r2;
-    } catch {
-    }
   }
-  if (!isCreative) {
+  try {
+    const r2 = await getPollinationsReply(userMessage);
+    if (r2 && r2.length > 4) return r2;
+  } catch {
+  }
+  if (!isCreative && !isCode && !isAdvice) {
     try {
       const ddg = await getDDGAnswer(userMessage);
       if (ddg && ddg.length > 20) return `${ddg} \u{1F60A}
