@@ -24178,19 +24178,21 @@ Himmat ka daman tham jaao. \u{1F4AA}
     ];
     return poems[Math.floor(Math.random() * poems.length)];
   }
-  const nlMath = m.replace(/\b(multiplied by|times|x)\b/g, "*").replace(/\b(divided by|div)\b/g, "/").replace(/\b(plus|add)\b/g, "+").replace(/\b(minus|subtract)\b/g, "-").replace(/\b(squared|square)\b/g, "**2").replace(/\b(percent of)\b/g, "/100*").replace(/[^0-9+\-*/.()%\s\*]/g, " ").trim();
-  const mathOnlyMatch = nlMath.match(/^[\d\s\+\-\*\/\.\(\)\%\^]+$/);
-  if (mathOnlyMatch) {
-    try {
-      const result = Function(`"use strict"; return (${nlMath.replace(/[^0-9+\-*/.()%\s]/g, "")})`)();
-      if (typeof result === "number" && isFinite(result)) {
-        const pretty = Number.isInteger(result) ? result : parseFloat(result.toFixed(6));
-        return `${msg.trim()} = **${pretty}** \u{1F522}\u2728`;
+  const hasMathOp = /[+\-*\/]/.test(msg.trim());
+  const nlMath = hasMathOp ? m.replace(/\b(multiplied by|times)\b/g, "*").replace(/\b(divided by|div)\b/g, "/").replace(/\b(plus|add)\b/g, "+").replace(/\b(minus|subtract)\b/g, "-").replace(/\b(squared|square)\b/g, "**2").replace(/\b(percent of)\b/g, "/100*").replace(/[^0-9+\-*/.()%\s\*]/g, " ").trim() : "";
+  if (hasMathOp && nlMath) {
+    const mathOnlyMatch = nlMath.match(/^[\d\s\+\-\*\/\.\(\)\%\^]+$/);
+    if (mathOnlyMatch) {
+      try {
+        const result = Function(`"use strict"; return (${nlMath.replace(/[^0-9+\-*/.()%\s]/g, "")})`)();
+        if (typeof result === "number" && isFinite(result)) {
+          const pretty = Number.isInteger(result) ? result : parseFloat(result.toFixed(6));
+          return `${msg.trim()} = **${pretty}** \u{1F522}\u2728`;
+        }
+      } catch {
       }
-    } catch {
     }
   }
-  const hasMathOp = /[+\-*\/]/.test(msg.trim());
   const pureMath = m.replace(/[^0-9+\-*/.()%\s]/g, "").trim();
   if (hasMathOp && /^[\d\s\+\-\*\/\.\(\)\%]+$/.test(pureMath) && pureMath.length > 0) {
     try {
