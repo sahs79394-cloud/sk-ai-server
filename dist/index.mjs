@@ -24274,21 +24274,15 @@ function pollPost(msg, model) {
 }
 async function getPollinationsReply(userMessage, _imageBase64) {
   if (_imageBase64) throw new Error("use_vision");
-  const attempts = [
-    () => pollGet(userMessage, "openai"),
-    () => pollGet(userMessage, "mistral"),
-    () => pollPost(userMessage, "openai-fast"),
-    () => pollGet(userMessage, "llama")
+  const racers = [
+    pollGet(userMessage, "openai"),
+    pollGet(userMessage, "mistral"),
+    pollPost(userMessage, "openai-fast"),
+    pollGet(userMessage, "llama")
   ];
-  for (let i = 0; i < attempts.length; i++) {
-    try {
-      const reply = await attempts[i]();
-      if (reply && reply.length > 4) return reply;
-    } catch {
-      if (i < attempts.length - 1) await new Promise((r) => setTimeout(r, 800));
-    }
-  }
-  throw new Error("all_models_failed");
+  const reply = await Promise.any(racers);
+  if (reply && reply.length > 4) return reply;
+  throw new Error("empty_reply");
 }
 function extractTextFromImage(imageUrl) {
   return new Promise((resolve, reject) => {
