@@ -24313,6 +24313,22 @@ function getField(body, ...keys) {
   }
   return "";
 }
+var replyCache = /* @__PURE__ */ new Map();
+function getCacheKey(sender, message) {
+  return `${sender}:${message.trim().toLowerCase().slice(0, 80)}`;
+}
+function getCached(sender, message) {
+  const key = getCacheKey(sender, message);
+  const cached = replyCache.get(key);
+  if (cached && Date.now() - cached.ts < 15e3) return cached.reply;
+  replyCache.delete(key);
+  return null;
+}
+function setCache(sender, message, reply) {
+  const key = getCacheKey(sender, message);
+  replyCache.set(key, { reply, ts: Date.now() });
+  setTimeout(() => replyCache.delete(key), 15e3);
+}
 skRouter.post("/webhook", async (req, res) => {
   try {
     const body = req.body || {};
@@ -24387,6 +24403,18 @@ skRouter.post("/webhook", async (req, res) => {
       res.status(200).json({ replies: [{ message: "SK AI ready! \u{1F60A} Send a message or image." }] });
       return;
     }
+    const msgKey = userMessage || (imageUrl ? "__image__" : "__image_b64__");
+    const cachedReply = getCached(sender, msgKey);
+    if (cachedReply) {
+      res.status(200).json({
+        replies: [{ message: cachedReply }],
+        reply: cachedReply,
+        response: cachedReply,
+        message: cachedReply,
+        text: cachedReply
+      });
+      return;
+    }
     if (userMessage && isNegativeMessage(userMessage)) {
       const warnCount = recordWarning(sender, userMessage);
       let warningReply = "";
@@ -24456,6 +24484,7 @@ Main SK hoon \u2014 Mr. Suraj Sir ka AI! \u{1F916}\u{1F31F}`;
       }
     }
     const finalReply = reply.trim();
+    setCache(sender, msgKey, finalReply);
     res.status(200).json({
       replies: [{ message: finalReply }],
       reply: finalReply,
