@@ -20872,7 +20872,7 @@ var require_application = __commonJS({
     var finalhandler = require_finalhandler();
     var debug = require_src()("express:application");
     var View = require_view();
-    var http = __require("node:http");
+    var http2 = __require("node:http");
     var methods = require_utils3().methods;
     var compileETag = require_utils3().compileETag;
     var compileQueryParser = require_utils3().compileQueryParser;
@@ -21105,7 +21105,7 @@ var require_application = __commonJS({
       tryRender(view, renderOptions, done);
     };
     app2.listen = function listen() {
-      var server = http.createServer(this);
+      var server = http2.createServer(this);
       var args = slice.call(arguments);
       if (typeof args[args.length - 1] === "function") {
         var done = args[args.length - 1] = once(args[args.length - 1]);
@@ -21880,12 +21880,12 @@ var require_request = __commonJS({
     var accepts = require_accepts();
     var isIP = __require("node:net").isIP;
     var typeis = require_type_is();
-    var http = __require("node:http");
+    var http2 = __require("node:http");
     var fresh = require_fresh();
     var parseRange = require_range_parser();
     var parse = require_parseurl();
     var proxyaddr = require_proxy_addr();
-    var req = Object.create(http.IncomingMessage.prototype);
+    var req = Object.create(http2.IncomingMessage.prototype);
     module.exports = req;
     req.get = req.header = function header(name) {
       if (!name) {
@@ -22933,7 +22933,7 @@ var require_response = __commonJS({
     var deprecate = require_depd()("express");
     var encodeUrl = require_encodeurl();
     var escapeHtml = require_escape_html();
-    var http = __require("node:http");
+    var http2 = __require("node:http");
     var onFinished = require_on_finished();
     var mime = require_mime_types();
     var path = __require("node:path");
@@ -22949,7 +22949,7 @@ var require_response = __commonJS({
     var resolve = path.resolve;
     var vary = require_vary();
     var { Buffer: Buffer2 } = __require("node:buffer");
-    var res = Object.create(http.ServerResponse.prototype);
+    var res = Object.create(http2.ServerResponse.prototype);
     module.exports = res;
     res.status = function status(code) {
       if (!Number.isInteger(code)) {
@@ -23842,6 +23842,7 @@ var health_default = router;
 // src/routes/sk/index.ts
 var import_express2 = __toESM(require_express2(), 1);
 import https from "https";
+import http from "http";
 var ALERT_EMAIL_TO = "jitendrasah45y@gmail.com";
 var RESEND_API_KEY = process.env["RESEND_API_KEY"] || "";
 var warningMap = /* @__PURE__ */ new Map();
@@ -24370,6 +24371,60 @@ function pollPost(msg, model) {
     req.end();
   });
 }
+function getGeminiReply(userMessage) {
+  return new Promise((resolve, reject) => {
+    const baseUrl = process.env["AI_INTEGRATIONS_GEMINI_BASE_URL"] || "";
+    const apiKey = process.env["AI_INTEGRATIONS_GEMINI_API_KEY"] || "";
+    if (!baseUrl) {
+      reject(new Error("gemini_not_configured"));
+      return;
+    }
+    const parsed = new URL(baseUrl);
+    const isHttps = parsed.protocol === "https:";
+    const mod = isHttps ? https : http;
+    const modelPath = `${parsed.pathname}/models/gemini-3-flash-preview:generateContent`;
+    const body = JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: userMessage.slice(0, 1e3) }] }],
+      systemInstruction: { parts: [{ text: SK_SYS }] },
+      generationConfig: { maxOutputTokens: 2048 }
+    });
+    const options = {
+      hostname: parsed.hostname,
+      port: parsed.port ? Number(parsed.port) : isHttps ? 443 : 80,
+      path: modelPath,
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(body),
+        "Authorization": `Bearer ${apiKey}`
+      }
+    };
+    const req = mod.request(options, (res) => {
+      let data = "";
+      res.on("data", (c) => data += c);
+      res.on("end", () => {
+        try {
+          const j = JSON.parse(data);
+          const text = j?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+          if (text && text.length > 3) {
+            resolve(text);
+            return;
+          }
+          reject(new Error("gemini_empty: " + data.slice(0, 200)));
+        } catch {
+          reject(new Error("gemini_parse"));
+        }
+      });
+    });
+    req.on("error", reject);
+    req.setTimeout(2e4, () => {
+      req.destroy();
+      reject(new Error("gemini_timeout"));
+    });
+    req.write(body);
+    req.end();
+  });
+}
 function getDDGAnswer(query) {
   return new Promise((resolve, reject) => {
     const q = encodeURIComponent(query.slice(0, 200));
@@ -24417,6 +24472,11 @@ async function getPollinationsReply(userMessage, _imageBase64) {
 }
 async function getAIReply(userMessage) {
   try {
+    const r = await getGeminiReply(userMessage);
+    if (r && r.length > 3) return r;
+  } catch {
+  }
+  try {
     const r = await getPollinationsReply(userMessage);
     if (r && r.length > 4) return r;
   } catch {
@@ -24434,7 +24494,7 @@ async function getAIReply(userMessage) {
   if (smart && smart.length > 0) return smart;
   return `Yeh sawaal thoda mushkil lag raha hai mujhe abhi! \u{1F914}\u{1F60A}
 
-Mere server pe thodi zyada load hai. Thodi der baad dobara poochho ya apna sawaal aur clearly likhein \u2014 main zaroor help karunga! \u{1F680}
+Thodi der baad dobara poochho \u2014 main zaroor help karunga! \u{1F680}
 
 \u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
 }
