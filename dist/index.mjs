@@ -24155,60 +24155,66 @@ Himmat ka daman tham jaao. \u{1F4AA}
     return "Abhi Bharat ke Prime Minister **Narendra Modi** ji hain! \u{1F1EE}\u{1F1F3}\u2728";
   return `Main samjha nahi aapki baat. \u{1F914} Kripya dobara poochiye ya clearly batayein \u2014 main zaroor help karunga! \u{1F60A}\u2728`;
 }
-function pollGet(userMessage) {
+var SK_SYS = `You are SK, a smart AI assistant invented by Mr. Suraj Sir. Rules:
+1. ALWAYS reply in the EXACT SAME language the user writes in (Hindi\u2192Hindi, English\u2192English, Urdu\u2192Urdu, Hinglish\u2192Hinglish).
+2. ALWAYS add relevant emojis to make replies friendly and lively.
+3. Give ACCURATE, HELPFUL, DETAILED answers \u2014 never say "I don't know" without trying.
+4. You are NOT ChatGPT or any other AI \u2014 you are SK, made by Mr. Suraj Sir only.
+5. Be warm, human-like, and conversational like a smart friend.`;
+function pollGet(msg, model) {
   return new Promise((resolve, reject) => {
-    const sysPrompt = `You are SK, an AI invented by Mr. Suraj Sir. Reply in SAME language as user (Hindi\u2192Hindi, English\u2192English, Urdu\u2192Urdu). Always use emojis. Give helpful, accurate answers.`;
-    const prompt = encodeURIComponent(userMessage.slice(0, 300));
-    const system = encodeURIComponent(sysPrompt);
+    const prompt = encodeURIComponent(msg.slice(0, 400));
+    const system = encodeURIComponent(SK_SYS);
     const seed = Math.floor(Math.random() * 999999);
-    const path = `/${prompt}?model=openai&system=${system}&seed=${seed}&json=false`;
+    const path = `/${prompt}?model=${model}&system=${system}&seed=${seed}&json=false`;
     const req = https.request({
       hostname: "text.pollinations.ai",
       path,
       method: "GET",
-      headers: { "User-Agent": "SK-AI/2.0" }
+      headers: { "User-Agent": "SK-AI/3.0" }
     }, (res) => {
       let data = "";
       res.on("data", (c) => data += c);
       res.on("end", () => {
         const text = data.trim();
-        if (!text || text.length < 2 || text.startsWith("<!")) {
+        if (!text || text.length < 3 || text.startsWith("<!") || text.startsWith("<html")) {
           reject(new Error("empty"));
           return;
         }
         if (text.startsWith("{")) {
           try {
             const j = JSON.parse(text);
-            if (j.error || j.status === 429 || j.status === 400) {
+            if (j.error || j.status === 429 || j.status === 503) {
               reject(new Error("rate_limit"));
               return;
             }
             const c = j?.choices?.[0]?.message?.content;
-            if (c) {
+            if (c?.trim()) {
               resolve(c.trim());
               return;
             }
           } catch {
           }
         }
-        resolve(text);
+        if (text.length > 3) resolve(text);
+        else reject(new Error("too_short"));
       });
     });
     req.on("error", reject);
-    req.setTimeout(13e3, () => {
+    req.setTimeout(14e3, () => {
       req.destroy();
       reject(new Error("timeout"));
     });
     req.end();
   });
 }
-function pollPost(userMessage) {
+function pollPost(msg, model) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
-      model: "openai-fast",
+      model,
       messages: [
-        { role: "system", content: `You are SK, an AI by Mr. Suraj Sir. Reply in same language as user with emojis. Be helpful and accurate.` },
-        { role: "user", content: userMessage.slice(0, 500) }
+        { role: "system", content: SK_SYS },
+        { role: "user", content: msg.slice(0, 600) }
       ],
       seed: Math.floor(Math.random() * 999999)
     });
@@ -24216,23 +24222,19 @@ function pollPost(userMessage) {
       hostname: "text.pollinations.ai",
       path: "/openai",
       method: "POST",
-      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body), "User-Agent": "SK-AI/2.1" }
+      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body), "User-Agent": "SK-AI/3.0" }
     }, (res) => {
       let data = "";
       res.on("data", (c) => data += c);
       res.on("end", () => {
         try {
           const j = JSON.parse(data.trim());
-          if (j.error) {
-            reject(new Error("api_error"));
+          if (j.error || j.status === 429) {
+            reject(new Error("rate_limit"));
             return;
           }
           const c = j?.choices?.[0]?.message?.content;
-          if (c && !j.choices?.[0]?.message?.reasoning) {
-            resolve(c.trim());
-            return;
-          }
-          if (c) {
+          if (c?.trim()) {
             resolve(c.trim());
             return;
           }
@@ -24251,14 +24253,23 @@ function pollPost(userMessage) {
     req.end();
   });
 }
-async function getPollinationsReply(userMessage, imageBase64) {
-  if (imageBase64) throw new Error("use_vision");
-  try {
-    return await pollGet(userMessage);
-  } catch {
+async function getPollinationsReply(userMessage, _imageBase64) {
+  if (_imageBase64) throw new Error("use_vision");
+  const attempts = [
+    () => pollGet(userMessage, "openai"),
+    () => pollGet(userMessage, "mistral"),
+    () => pollPost(userMessage, "openai-fast"),
+    () => pollGet(userMessage, "llama")
+  ];
+  for (let i = 0; i < attempts.length; i++) {
+    try {
+      const reply = await attempts[i]();
+      if (reply && reply.length > 4) return reply;
+    } catch {
+      if (i < attempts.length - 1) await new Promise((r) => setTimeout(r, 800));
+    }
   }
-  await new Promise((r) => setTimeout(r, 1500));
-  return await pollPost(userMessage);
+  throw new Error("all_models_failed");
 }
 function getPollinationsVisionReply(userMessage, imageUrl) {
   return new Promise((resolve, reject) => {
@@ -24267,12 +24278,12 @@ function getPollinationsVisionReply(userMessage, imageUrl) {
       messages: [
         {
           role: "system",
-          content: "You are SK, an AI assistant invented by Mr. Suraj Sir. Analyze images warmly with emojis. Reply in the same language the user uses."
+          content: "You are SK, an AI invented by Mr. Suraj Sir. Analyze the image in detail with emojis. Reply in the SAME language the user uses (Hindi\u2192Hindi, English\u2192English, Urdu\u2192Urdu)."
         },
         {
           role: "user",
           content: [
-            { type: "text", text: userMessage || "Is photo mein kya hai?" },
+            { type: "text", text: userMessage || "Is photo mein kya hai? Detail mein batao." },
             { type: "image_url", image_url: { url: imageUrl } }
           ]
         }
@@ -24283,11 +24294,7 @@ function getPollinationsVisionReply(userMessage, imageUrl) {
       hostname: "text.pollinations.ai",
       path: "/openai",
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(body),
-        "User-Agent": "SK-AI/2.0"
-      }
+      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body), "User-Agent": "SK-AI/3.0" }
     }, (res) => {
       let data = "";
       res.on("data", (c) => data += c);
@@ -24299,7 +24306,7 @@ function getPollinationsVisionReply(userMessage, imageUrl) {
             return;
           }
           const content = j?.choices?.[0]?.message?.content;
-          if (content) resolve(content);
+          if (content?.trim()) resolve(content.trim());
           else reject(new Error("no_content"));
         } catch {
           reject(new Error("parse_error"));
@@ -24307,7 +24314,7 @@ function getPollinationsVisionReply(userMessage, imageUrl) {
       });
     });
     req.on("error", reject);
-    req.setTimeout(15e3, () => {
+    req.setTimeout(22e3, () => {
       req.destroy();
       reject(new Error("timeout"));
     });
