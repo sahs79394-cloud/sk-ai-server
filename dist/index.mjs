@@ -23865,45 +23865,82 @@ function sendEmailAlert(sender, name, currentMsg, warningCount) {
     auth: { user: ALERT_EMAIL_FROM, pass: ALERT_EMAIL_PASS }
   });
   const history = getWarningHistory(sender);
+  const waNumber = sender.replace(/\D/g, "");
+  const waLink = `https://wa.me/${waNumber}`;
+  const timeNow = (/* @__PURE__ */ new Date()).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
   const historyRows = history.map(
-    (m, i) => `<tr style="background:${i % 2 === 0 ? "#fdf2f2" : "#fff"}">
-      <td style="padding:8px;border:1px solid #ddd;">Warning ${i + 1}</td>
-      <td style="padding:8px;border:1px solid #ddd;color:#e74c3c;">${m}</td>
+    (m, i) => `<tr>
+      <td style="padding:10px;font-weight:bold;border:1px solid #ddd;background:#fff3cd;white-space:nowrap;">\u26A0\uFE0F Gali #${i + 1}</td>
+      <td style="padding:10px;border:1px solid #ddd;background:#fff8e1;color:#c0392b;font-weight:bold;font-size:15px;">"${m}"</td>
     </tr>`
   ).join("");
   const html = `
-    <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;border:2px solid #e74c3c;border-radius:10px;padding:24px;">
-      <h2 style="color:#e74c3c;margin-top:0;">\u{1F6A8} SK AI \u2014 3 Warnings Complete!</h2>
-      <p style="font-size:15px;">Iss contact ne SK AI ko <b>3 baar galat/negative message bheja</b> \u2014 aapko alert kiya ja raha hai:</p>
-      <table style="width:100%;border-collapse:collapse;margin:12px 0;">
-        <tr style="background:#f8d7da;">
-          <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u{1F4F1} Phone Number</td>
-          <td style="padding:10px;border:1px solid #ddd;font-weight:bold;">${sender}</td>
-        </tr>
-        <tr>
-          <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u{1F464} Name</td>
-          <td style="padding:10px;border:1px solid #ddd;">${name}</td>
-        </tr>
-        <tr style="background:#f8d7da;">
-          <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u26A0\uFE0F Total Warnings</td>
-          <td style="padding:10px;border:1px solid #ddd;color:#e74c3c;font-weight:bold;">${warningCount} warnings</td>
-        </tr>
-        <tr>
-          <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u{1F550} Time</td>
-          <td style="padding:10px;border:1px solid #ddd;">${(/* @__PURE__ */ new Date()).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</td>
-        </tr>
-      </table>
-      <h3 style="color:#c0392b;">\u{1F4DD} Sabhi Negative Messages:</h3>
-      <table style="width:100%;border-collapse:collapse;">
-        ${historyRows}
-      </table>
-      <p style="margin-top:20px;color:#888;font-size:13px;">\u2014 SK AI Server v2.0 by Mr. Suraj Sir \u{1F916}</p>
+    <div style="font-family:Arial,sans-serif;max-width:580px;margin:auto;border:3px solid #e74c3c;border-radius:12px;overflow:hidden;">
+
+      <!-- Header -->
+      <div style="background:#e74c3c;padding:20px 24px;">
+        <h2 style="color:#fff;margin:0;font-size:20px;">\u{1F6A8} SK AI \u2014 Abuse Alert!</h2>
+        <p style="color:#fdd;margin:6px 0 0;font-size:14px;">Kisi ne SK AI ko ${warningCount} baar gali di \u2014 aapko report kiya ja raha hai</p>
+      </div>
+
+      <div style="padding:20px 24px;">
+
+        <!-- Contact Card -->
+        <div style="background:#f8f9fa;border:2px solid #dee2e6;border-radius:10px;padding:16px;margin-bottom:20px;">
+          <h3 style="margin:0 0 12px;color:#2c3e50;font-size:16px;">\u{1F4CB} Gali Dene Wale Ki Details</h3>
+          <table style="width:100%;border-collapse:collapse;">
+            <tr>
+              <td style="padding:8px 12px;font-weight:bold;color:#555;width:40%;">\u{1F464} Naam</td>
+              <td style="padding:8px 12px;font-weight:bold;color:#2c3e50;font-size:16px;">${name}</td>
+            </tr>
+            <tr style="background:#e9ecef;">
+              <td style="padding:8px 12px;font-weight:bold;color:#555;">\u{1F4F1} WhatsApp Number</td>
+              <td style="padding:8px 12px;font-weight:bold;color:#25D366;font-size:16px;">+${waNumber}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px;font-weight:bold;color:#555;">\u{1F517} WhatsApp Link</td>
+              <td style="padding:8px 12px;"><a href="${waLink}" style="color:#25D366;font-weight:bold;text-decoration:none;">Chat karo: ${waLink}</a></td>
+            </tr>
+            <tr style="background:#e9ecef;">
+              <td style="padding:8px 12px;font-weight:bold;color:#555;">\u26A0\uFE0F Total Warnings</td>
+              <td style="padding:8px 12px;font-weight:bold;color:#e74c3c;font-size:16px;">${warningCount} Warnings \u2757</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px;font-weight:bold;color:#555;">\u{1F550} Date &amp; Time</td>
+              <td style="padding:8px 12px;color:#555;">${timeNow} (IST)</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Gali Messages Section -->
+        <div style="background:#fff3cd;border:2px solid #ffc107;border-radius:10px;padding:16px;margin-bottom:20px;">
+          <h3 style="margin:0 0 12px;color:#856404;font-size:16px;">\u{1F92C} Isne Yeh Galiyan Di:</h3>
+          <table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;">
+            ${historyRows}
+          </table>
+        </div>
+
+        <!-- Action Hint -->
+        <div style="background:#d1ecf1;border:1px solid #bee5eb;border-radius:8px;padding:14px;">
+          <p style="margin:0;color:#0c5460;font-size:14px;">
+            \u{1F4A1} <b>Kya karein?</b> Is number ko WhatsApp pe block kar sakte hain ya ignore kar sakte hain.<br>
+            <a href="${waLink}" style="color:#0c5460;font-weight:bold;">\u{1F449} Direct WhatsApp: ${waLink}</a>
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div style="background:#f8f9fa;padding:12px 24px;border-top:1px solid #dee2e6;text-align:center;">
+        <p style="margin:0;color:#888;font-size:12px;">\u2014 SK AI Server v2.0 \xB7 Invented by Mr. Suraj Sir \u{1F916}</p>
+      </div>
+
     </div>
   `;
   transporter.sendMail({
     from: `"SK AI Alert \u{1F916}" <${ALERT_EMAIL_FROM}>`,
     to: ALERT_EMAIL_TO,
-    subject: `\u{1F6A8} SK AI Alert \u2014 ${name} (${sender}) ne 3 warnings complete ki!`,
+    subject: `\u{1F6A8} SK AI Alert \u2014 ${name} (+${waNumber}) ne ${warningCount} Galiyan Di!`,
     html
   }).catch(() => {
   });
@@ -24334,17 +24371,31 @@ skRouter.post("/webhook", async (req, res) => {
       const warnCount = recordWarning(sender, userMessage);
       let warningReply = "";
       if (warnCount === 1) {
-        warningReply = `\u26A0\uFE0F Warning 1/3 \u2014 ${name} ji, please polite language use karein.
-SK AI aapki madad ke liye hai. Izzat se baat karein! \u{1F64F}`;
+        warningReply = `\u26A0\uFE0F Warning 1/3
+
+${name} ji, aapne likha: "${userMessage}"
+
+Yeh galat/abusive language hai. Please polite baat karein. \u{1F64F}
+SK AI aapki madad ke liye hai, izzat se baat karein! \u{1F60A}`;
       } else if (warnCount === 2) {
-        warningReply = `\u26A0\uFE0F Warning 2/3 \u2014 ${name} ji, yeh aapki doosri warning hai!
-Agr phir aisa hua toh report kar diya jayega. \u{1F6A8}`;
+        warningReply = `\u26A0\uFE0F Warning 2/3
+
+${name} ji, aapne phir likha: "${userMessage}"
+
+Yeh aapki doosri warning hai! Agar dobara aisa kiya toh aapka number report kar diya jayega. \u{1F6A8}`;
       } else if (warnCount === 3) {
-        warningReply = `\u{1F6A8} Warning 3/3 \u2014 ${name} ji, aapne teesri baar galat language use ki!
-Aapke number (${sender}) ki report owner ko bhej di gayi hai. \u26D4`;
+        warningReply = `\u{1F6A8} Warning 3/3 \u2014 REPORT BHEJA GAYA!
+
+${name} ji, aapne likha: "${userMessage}"
+
+Aapne teesri baar galat language use ki.
+Aapka number (${sender}) owner ko report kar diya gaya hai! \u26D4
+Kripya aage se izzat se baat karein.`;
         sendEmailAlert(sender, name, userMessage, warnCount);
       } else {
-        warningReply = `\u26D4 ${name} ji, aap block kiye ja sakte hain. Galat language band karein! \u{1F6AB}`;
+        warningReply = `\u26D4 ${name} ji, aap pehle se report ho chuke hain!
+Aapne likha: "${userMessage}"
+Galat language band karein warna block ho sakte hain. \u{1F6AB}`;
         if (warnCount % 3 === 0) {
           sendEmailAlert(sender, name, userMessage, warnCount);
         }
