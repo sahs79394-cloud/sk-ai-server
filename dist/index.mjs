@@ -24101,6 +24101,38 @@ function getSmartFallback(msg) {
     return "Suno ek chhota joke! \u{1F604}\nEk banda AI se poocha: 'Kya tum smart ho?'\nAI ne kaha: 'Main SK hoon \u2014 Mr. Suraj Sir ne banaya hai, toh haan! \u{1F60E}'\n\u{1F602} Aur kuch chahiye? \u{1F31F}";
   if (/(love you|i love|pyaar|ishq|mohabbat|dil|dilbar)/.test(m))
     return "Aww! \u{1F60A}\u{1F499} Aapka pyaar sun ke bahut acha laga! Mr. Suraj Sir ne mujhe isliye banaya ki main aap sabki help karun! \u{1F31F}\u2728";
+  if (/(poem|poetry|kavita|kavitaa|shayari|sher|nazm)/.test(m)) {
+    const poems = [
+      `\u270D\uFE0F Yeh chhoti si kavita aapke liye:
+
+\u{1F338} *Ek nanha sa sapna*
+Zindagi ek safar hai pyaara,
+Har kadam mein hai nazaara.
+Muskura ke chal aage,
+Khushiyon ka milega kinara. \u{1F308}
+
+\u2014 SK AI \u{1F916}\u2728`,
+      `\u270D\uFE0F Aapke liye ek shayari:
+
+\u{1F339} *Dil ki baat*
+Dil mein ek umang si jagti hai,
+Jab subah ki dhoop aati hai.
+Zindagi ka rang hai sunehla,
+Yeh baat dil ko bhaati hai. \u{1F305}
+
+\u2014 SK AI \u{1F916}\u2728`,
+      `\u270D\uFE0F Ek chhoti kavita aapke naam:
+
+\u2B50 *Roshan raah*
+Andheron mein ek diya jalao,
+Ujala apne dil mein laao.
+Musibat mein haar mat maano,
+Himmat ka daman tham jaao. \u{1F4AA}
+
+\u2014 SK AI \u{1F916}\u2728`
+    ];
+    return poems[Math.floor(Math.random() * poems.length)];
+  }
   const mathMatch = m.match(/^[\s\d\+\-\*\/\^\(\)\.\%\s]+$/);
   if (mathMatch) {
     try {
