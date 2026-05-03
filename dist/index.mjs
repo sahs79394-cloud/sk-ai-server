@@ -24098,6 +24098,28 @@ function getSmartFallback(msg) {
     return "Photo bhejiye! \u{1F4F8}\u{1F60A} Main use dekh kar analyse karunga! \u{1F50D}\u2728";
   if (/(joke|mazak|funny|hasao|maza karo)/.test(m))
     return "Suno ek chhota joke! \u{1F604}\nEk banda AI se poocha: 'Kya tum smart ho?'\nAI ne kaha: 'Main SK hoon \u2014 Mr. Suraj Sir ne banaya hai, toh haan! \u{1F60E}'\n\u{1F602} Aur kuch chahiye? \u{1F31F}";
+  if (/(motivational|motivation|inspire|inspired|story|kahani|kahani sunao|himmat|hausla|life|zindagi).*(story|kahani|sunao|batao|quote|tip|advice|bolo)/.test(m) || /(story|kahani).*(sunao|batao|do|please)/.test(m) || /^(motivational story|ek kahani|ek story|story sunao|kahani sunao)/.test(m))
+    return `\u2728 *Ek Motivational Story* \u2728
+
+Ek baar ek chhota sa baccha tha jo baar baar fail ho raha tha. Log kehte the \u2014 *"Tum kuch nahi kar sakte."* \u{1F614}
+
+Lekin us bacche ne haar nahi maana. Roz 1 ghanta extra mehnat ki. 6 mahine baad woh apni class ka **topper** ban gaya! \u{1F3C6}
+
+\u{1F4A1} **Seekh:**
+*"Kamyabi seedha raah nahi hoti \u2014 lekin jo chalta rehta hai, woh zaroor pahunchta hai."* \u{1F680}
+
+Aap bhi kar sakte ho! Mehnat karo, result zaroor aayega! \u{1F4AA}\u{1F31F}
+
+\u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
+  if (/(quote|achi baat|suvichar|anmol vachan|good thought|thought of the day)/.test(m))
+    return `\u{1F4AD} *Aaj ka Suvichar* \u{1F4AD}
+
+*"Sapne woh nahi jo neend mein aate hain,*
+*sapne woh hain jo neend nahi aane dete."*
+\u2014 APJ Abdul Kalam \u{1F31F}
+
+Kaam karo, sapne sach honge! \u{1F4AA}\u2728
+\u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
   if (/(love you|i love|pyaar|ishq|mohabbat|dil|dilbar)/.test(m))
     return "Aww! \u{1F60A}\u{1F499} Aapka pyaar sun ke bahut acha laga! Mr. Suraj Sir ne mujhe isliye banaya ki main aap sabki help karun! \u{1F31F}\u2728";
   if (/(poem|poetry|kavita|kavitaa|shayari|sher|nazm)/.test(m)) {
@@ -24206,8 +24228,10 @@ Himmat ka daman tham jaao. \u{1F4AA}
     return "Duniya ka sabse uncha pahad **Mount Everest** hai \u2014 **8,848.86 meters** uncha! \u{1F3D4}\uFE0F\u2728\nYeh Nepal aur Tibet ki seema par hai. Edmund Hillary pehle insan the jo 1953 mein chadhe!";
   if (/(ocean|mahasagar|samundar).*(kitne|how many|largest|deepest)/.test(m))
     return "Duniya mein **5 Mahasagar (Oceans)** hain! \u{1F30A}\u2728\n1. Pacific (sabse bada)\n2. Atlantic\n3. Indian Ocean (Hindi Mahasagar)\n4. Arctic\n5. Southern Ocean\n\nSabse gehra trench **Mariana Trench** (~11,000m) hai! \u{1F531}";
-  if (/(pm|prime minister).*(india|bharat)/.test(m) || /(bharat|india).*(pm|pradhan mantri)/.test(m))
+  if (/(pm|prime minister|pradhan mantri).*(india|bharat)/.test(m) || /(bharat|india).*(pm|prime minister|pradhan mantri)/.test(m))
     return "Abhi Bharat ke Prime Minister **Narendra Modi** ji hain! \u{1F1EE}\u{1F1F3}\u2728 Woh 2014 se PM hain.";
+  if (/(first|pehla|pehle|pahle|1st).*(pm|prime minister|pradhan mantri)/.test(m) || /(pm|prime minister|pradhan mantri).*(first|pehla)/.test(m))
+    return "Bharat ke **pehle (1st) Prime Minister Pt. Jawaharlal Nehru** ji the! \u{1F1EE}\u{1F1F3}\u2728\nWoh 1947 se 1964 tak PM rahe. Bacche unhe pyaar se **Chacha Nehru** kehte the! \u{1F339}\n14 November unka birthday hai \u2014 **Children's Day** ke roop mein manaya jata hai! \u{1F389}";
   if (/(president|rashtrapati).*(india|bharat)/.test(m))
     return "Abhi Bharat ki Rashtrapati **Smt. Droupadi Murmu** ji hain! \u{1F1EE}\u{1F1F3}\u2728 Woh Bharat ki pehli Adivasi mahila Rashtrapati hain!";
   if (/(chandrayaan).*(3|teen|launch|kab)/.test(m) || /(chandrayaan[ -]3)/.test(m))
