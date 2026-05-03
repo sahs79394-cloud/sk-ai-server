@@ -23843,10 +23843,8 @@ var health_default = router;
 var import_express2 = __toESM(require_express2(), 1);
 import https from "https";
 import http from "http";
-import nodemailer from "nodemailer";
 var ALERT_EMAIL_TO = "jitendrasah45y@gmail.com";
-var ALERT_EMAIL_FROM = process.env["ALERT_EMAIL_FROM"] || "";
-var ALERT_EMAIL_PASS = process.env["ALERT_EMAIL_PASS"] || "";
+var RESEND_API_KEY = process.env["RESEND_API_KEY"] || "";
 var warningMap = /* @__PURE__ */ new Map();
 function recordWarning(sender, message) {
   const existing = warningMap.get(sender) ?? { count: 0, messages: [] };
@@ -23858,14 +23856,49 @@ function recordWarning(sender, message) {
 function getWarningHistory(sender) {
   return warningMap.get(sender)?.messages ?? [];
 }
-function sendEmailAlert(sender, name, currentMsg, warningCount) {
-  if (!ALERT_EMAIL_FROM || !ALERT_EMAIL_PASS) return;
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: { user: ALERT_EMAIL_FROM, pass: ALERT_EMAIL_PASS }
+function sendResendEmail(subject, html) {
+  return new Promise((resolve) => {
+    if (!RESEND_API_KEY) {
+      resolve({ ok: false, error: "RESEND_API_KEY not set" });
+      return;
+    }
+    const body = JSON.stringify({
+      from: "SK AI Alert <onboarding@resend.dev>",
+      to: [ALERT_EMAIL_TO],
+      subject,
+      html
+    });
+    const req = https.request({
+      hostname: "api.resend.com",
+      path: "/emails",
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(body)
+      }
+    }, (res) => {
+      let data = "";
+      res.on("data", (c) => data += c);
+      res.on("end", () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (res.statusCode === 200 || res.statusCode === 201) {
+            resolve({ ok: true });
+          } else {
+            resolve({ ok: false, error: parsed?.message || data });
+          }
+        } catch {
+          resolve({ ok: false, error: data });
+        }
+      });
+    });
+    req.on("error", (err) => resolve({ ok: false, error: err.message }));
+    req.write(body);
+    req.end();
   });
+}
+function buildAlertHtml(sender, name, warningCount) {
   const history = getWarningHistory(sender);
   const waNumber = sender.replace(/\D/g, "");
   const waLink = `https://wa.me/${waNumber}`;
@@ -23876,75 +23909,42 @@ function sendEmailAlert(sender, name, currentMsg, warningCount) {
       <td style="padding:10px;border:1px solid #ddd;background:#fff8e1;color:#c0392b;font-weight:bold;font-size:15px;">"${m}"</td>
     </tr>`
   ).join("");
-  const html = `
+  return `
     <div style="font-family:Arial,sans-serif;max-width:580px;margin:auto;border:3px solid #e74c3c;border-radius:12px;overflow:hidden;">
-
-      <!-- Header -->
       <div style="background:#e74c3c;padding:20px 24px;">
         <h2 style="color:#fff;margin:0;font-size:20px;">\u{1F6A8} SK AI \u2014 Abuse Alert!</h2>
-        <p style="color:#fdd;margin:6px 0 0;font-size:14px;">Kisi ne SK AI ko ${warningCount} baar gali di \u2014 aapko report kiya ja raha hai</p>
+        <p style="color:#fdd;margin:6px 0 0;font-size:14px;">Kisi ne SK AI ko ${warningCount} baar gali di</p>
       </div>
-
       <div style="padding:20px 24px;">
-
-        <!-- Contact Card -->
         <div style="background:#f8f9fa;border:2px solid #dee2e6;border-radius:10px;padding:16px;margin-bottom:20px;">
           <h3 style="margin:0 0 12px;color:#2c3e50;font-size:16px;">\u{1F4CB} Gali Dene Wale Ki Details</h3>
           <table style="width:100%;border-collapse:collapse;">
-            <tr>
-              <td style="padding:8px 12px;font-weight:bold;color:#555;width:40%;">\u{1F464} Naam</td>
-              <td style="padding:8px 12px;font-weight:bold;color:#2c3e50;font-size:16px;">${name}</td>
-            </tr>
-            <tr style="background:#e9ecef;">
-              <td style="padding:8px 12px;font-weight:bold;color:#555;">\u{1F4F1} WhatsApp Number</td>
-              <td style="padding:8px 12px;font-weight:bold;color:#25D366;font-size:16px;">+${waNumber}</td>
-            </tr>
-            <tr>
-              <td style="padding:8px 12px;font-weight:bold;color:#555;">\u{1F517} WhatsApp Link</td>
-              <td style="padding:8px 12px;"><a href="${waLink}" style="color:#25D366;font-weight:bold;text-decoration:none;">Chat karo: ${waLink}</a></td>
-            </tr>
-            <tr style="background:#e9ecef;">
-              <td style="padding:8px 12px;font-weight:bold;color:#555;">\u26A0\uFE0F Total Warnings</td>
-              <td style="padding:8px 12px;font-weight:bold;color:#e74c3c;font-size:16px;">${warningCount} Warnings \u2757</td>
-            </tr>
-            <tr>
-              <td style="padding:8px 12px;font-weight:bold;color:#555;">\u{1F550} Date &amp; Time</td>
-              <td style="padding:8px 12px;color:#555;">${timeNow} (IST)</td>
-            </tr>
+            <tr><td style="padding:8px 12px;font-weight:bold;color:#555;width:40%;">\u{1F464} Naam</td><td style="padding:8px 12px;font-weight:bold;color:#2c3e50;font-size:16px;">${name}</td></tr>
+            <tr style="background:#e9ecef;"><td style="padding:8px 12px;font-weight:bold;color:#555;">\u{1F4F1} WhatsApp Number</td><td style="padding:8px 12px;font-weight:bold;color:#25D366;font-size:16px;">+${waNumber}</td></tr>
+            <tr><td style="padding:8px 12px;font-weight:bold;color:#555;">\u{1F517} WhatsApp</td><td style="padding:8px 12px;"><a href="${waLink}" style="color:#25D366;font-weight:bold;">${waLink}</a></td></tr>
+            <tr style="background:#e9ecef;"><td style="padding:8px 12px;font-weight:bold;color:#555;">\u26A0\uFE0F Total Warnings</td><td style="padding:8px 12px;font-weight:bold;color:#e74c3c;font-size:16px;">${warningCount} Warnings \u2757</td></tr>
+            <tr><td style="padding:8px 12px;font-weight:bold;color:#555;">\u{1F550} Time</td><td style="padding:8px 12px;color:#555;">${timeNow} (IST)</td></tr>
           </table>
         </div>
-
-        <!-- Gali Messages Section -->
         <div style="background:#fff3cd;border:2px solid #ffc107;border-radius:10px;padding:16px;margin-bottom:20px;">
           <h3 style="margin:0 0 12px;color:#856404;font-size:16px;">\u{1F92C} Isne Yeh Galiyan Di:</h3>
-          <table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;">
-            ${historyRows}
-          </table>
+          <table style="width:100%;border-collapse:collapse;">${historyRows}</table>
         </div>
-
-        <!-- Action Hint -->
         <div style="background:#d1ecf1;border:1px solid #bee5eb;border-radius:8px;padding:14px;">
-          <p style="margin:0;color:#0c5460;font-size:14px;">
-            \u{1F4A1} <b>Kya karein?</b> Is number ko WhatsApp pe block kar sakte hain ya ignore kar sakte hain.<br>
-            <a href="${waLink}" style="color:#0c5460;font-weight:bold;">\u{1F449} Direct WhatsApp: ${waLink}</a>
-          </p>
+          <p style="margin:0;color:#0c5460;font-size:14px;">\u{1F4A1} <b>Action:</b> Is number ko WhatsApp pe block karein.<br>
+          <a href="${waLink}" style="color:#0c5460;font-weight:bold;">\u{1F449} Direct WhatsApp: ${waLink}</a></p>
         </div>
-
       </div>
-
-      <!-- Footer -->
       <div style="background:#f8f9fa;padding:12px 24px;border-top:1px solid #dee2e6;text-align:center;">
         <p style="margin:0;color:#888;font-size:12px;">\u2014 SK AI Server v2.0 \xB7 Invented by Mr. Suraj Sir \u{1F916}</p>
       </div>
-
-    </div>
-  `;
-  transporter.sendMail({
-    from: `"SK AI Alert \u{1F916}" <${ALERT_EMAIL_FROM}>`,
-    to: ALERT_EMAIL_TO,
-    subject: `\u{1F6A8} SK AI Alert \u2014 ${name} (+${waNumber}) ne ${warningCount} Galiyan Di!`,
-    html
-  }).catch(() => {
+    </div>`;
+}
+function sendEmailAlert(sender, name, currentMsg, warningCount) {
+  const waNumber = sender.replace(/\D/g, "");
+  const subject = `\u{1F6A8} SK AI Alert \u2014 ${name} (+${waNumber}) ne ${warningCount} Galiyan Di!`;
+  const html = buildAlertHtml(sender, name, warningCount);
+  sendResendEmail(subject, html).catch(() => {
   });
 }
 var NEGATIVE_WORDS_EXACT = [
@@ -24027,33 +24027,22 @@ function isNegativeMessage(message) {
 var skRouter = (0, import_express2.Router)();
 var sk_default = skRouter;
 skRouter.get("/test-email", async (req, res) => {
-  if (!ALERT_EMAIL_FROM || !ALERT_EMAIL_PASS) {
-    res.json({ ok: false, error: "ALERT_EMAIL_FROM or ALERT_EMAIL_PASS not set", from: ALERT_EMAIL_FROM, passLen: ALERT_EMAIL_PASS.length });
+  if (!RESEND_API_KEY) {
+    res.json({ ok: false, error: "RESEND_API_KEY not set in Railway env vars" });
     return;
   }
-  try {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: { user: ALERT_EMAIL_FROM, pass: ALERT_EMAIL_PASS }
-    });
-    await transporter.verify();
-    await transporter.sendMail({
-      from: `"SK AI Test \u{1F916}" <${ALERT_EMAIL_FROM}>`,
-      to: ALERT_EMAIL_TO,
-      subject: "\u2705 SK AI \u2014 Email Test Successful!",
-      html: `<div style="font-family:Arial;padding:20px;border:2px solid #27ae60;border-radius:10px;">
-        <h2 style="color:#27ae60;">\u2705 Email Working!</h2>
-        <p>SK AI ka email system sahi kaam kar raha hai.</p>
-        <p>Time: ${(/* @__PURE__ */ new Date()).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST</p>
-        <p>\u2014 SK AI v2.0 by Mr. Suraj Sir \u{1F916}</p>
-      </div>`
-    });
-    res.json({ ok: true, message: "Test email sent! Check " + ALERT_EMAIL_TO });
-  } catch (err) {
-    res.json({ ok: false, error: err?.message, code: err?.code, command: err?.command });
-  }
+  const result = await sendResendEmail(
+    "\u2705 SK AI \u2014 Email Test Successful!",
+    `<div style="font-family:Arial;padding:20px;border:2px solid #27ae60;border-radius:10px;">
+      <h2 style="color:#27ae60;">\u2705 Email Working!</h2>
+      <p>SK AI ka email system (Resend API) sahi kaam kar raha hai! \u{1F389}</p>
+      <p><b>Time:</b> ${(/* @__PURE__ */ new Date()).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST</p>
+      <p>\u2014 SK AI v2.0 by Mr. Suraj Sir \u{1F916}</p>
+    </div>`
+  );
+  res.json(
+    result.ok ? { ok: true, message: `\u2705 Test email sent to ${ALERT_EMAIL_TO}! Check your inbox.` } : { ok: false, error: result.error }
+  );
 });
 function getSmartFallback(msg) {
   const m = msg.toLowerCase().trim();
