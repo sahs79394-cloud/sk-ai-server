@@ -23847,41 +23847,63 @@ import nodemailer from "nodemailer";
 var ALERT_EMAIL_TO = "jitendrasah45y@gmail.com";
 var ALERT_EMAIL_FROM = process.env["ALERT_EMAIL_FROM"] || "";
 var ALERT_EMAIL_PASS = process.env["ALERT_EMAIL_PASS"] || "";
-function sendAbusAlert(sender, name, message) {
+var warningMap = /* @__PURE__ */ new Map();
+function recordWarning(sender, message) {
+  const existing = warningMap.get(sender) ?? { count: 0, messages: [] };
+  existing.count += 1;
+  existing.messages.push(message);
+  warningMap.set(sender, existing);
+  return existing.count;
+}
+function getWarningHistory(sender) {
+  return warningMap.get(sender)?.messages ?? [];
+}
+function sendEmailAlert(sender, name, currentMsg, warningCount) {
   if (!ALERT_EMAIL_FROM || !ALERT_EMAIL_PASS) return;
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: { user: ALERT_EMAIL_FROM, pass: ALERT_EMAIL_PASS }
   });
+  const history = getWarningHistory(sender);
+  const historyRows = history.map(
+    (m, i) => `<tr style="background:${i % 2 === 0 ? "#fdf2f2" : "#fff"}">
+      <td style="padding:8px;border:1px solid #ddd;">Warning ${i + 1}</td>
+      <td style="padding:8px;border:1px solid #ddd;color:#e74c3c;">${m}</td>
+    </tr>`
+  ).join("");
   const html = `
-    <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;border:2px solid #e74c3c;border-radius:10px;padding:20px;">
-      <h2 style="color:#e74c3c;">\u26A0\uFE0F SK AI \u2014 Negative Message Alert</h2>
-      <p style="font-size:16px;">Kisi ne SK AI ko galat/negative message bheja hai:</p>
-      <table style="width:100%;border-collapse:collapse;margin-top:10px;">
-        <tr style="background:#fdf2f2;">
+    <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;border:2px solid #e74c3c;border-radius:10px;padding:24px;">
+      <h2 style="color:#e74c3c;margin-top:0;">\u{1F6A8} SK AI \u2014 3 Warnings Complete!</h2>
+      <p style="font-size:15px;">Iss contact ne SK AI ko <b>3 baar galat/negative message bheja</b> \u2014 aapko alert kiya ja raha hai:</p>
+      <table style="width:100%;border-collapse:collapse;margin:12px 0;">
+        <tr style="background:#f8d7da;">
           <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u{1F4F1} Phone Number</td>
-          <td style="padding:10px;border:1px solid #ddd;">${sender}</td>
+          <td style="padding:10px;border:1px solid #ddd;font-weight:bold;">${sender}</td>
         </tr>
         <tr>
           <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u{1F464} Name</td>
           <td style="padding:10px;border:1px solid #ddd;">${name}</td>
         </tr>
-        <tr style="background:#fdf2f2;">
-          <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u{1F4AC} Message</td>
-          <td style="padding:10px;border:1px solid #ddd;color:#e74c3c;font-weight:bold;">${message}</td>
+        <tr style="background:#f8d7da;">
+          <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u26A0\uFE0F Total Warnings</td>
+          <td style="padding:10px;border:1px solid #ddd;color:#e74c3c;font-weight:bold;">${warningCount} warnings</td>
         </tr>
         <tr>
           <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u{1F550} Time</td>
           <td style="padding:10px;border:1px solid #ddd;">${(/* @__PURE__ */ new Date()).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</td>
         </tr>
       </table>
-      <p style="margin-top:20px;color:#888;font-size:13px;">\u2014 SK AI Server by Mr. Suraj Sir \u{1F916}</p>
+      <h3 style="color:#c0392b;">\u{1F4DD} Sabhi Negative Messages:</h3>
+      <table style="width:100%;border-collapse:collapse;">
+        ${historyRows}
+      </table>
+      <p style="margin-top:20px;color:#888;font-size:13px;">\u2014 SK AI Server v2.0 by Mr. Suraj Sir \u{1F916}</p>
     </div>
   `;
   transporter.sendMail({
     from: `"SK AI Alert \u{1F916}" <${ALERT_EMAIL_FROM}>`,
     to: ALERT_EMAIL_TO,
-    subject: `\u26A0\uFE0F SK AI Alert \u2014 Negative message from ${sender}`,
+    subject: `\u{1F6A8} SK AI Alert \u2014 ${name} (${sender}) ne 3 warnings complete ki!`,
     html
   }).catch(() => {
   });
@@ -23958,10 +23980,6 @@ function isNegativeMessage(message) {
     const regex = new RegExp("(^|\\s|[^a-zA-Z])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "($|\\s|[^a-zA-Z])", "i");
     return regex.test(lower);
   });
-}
-function getNegativeReply(name) {
-  return `${name} ji, please polite language use karein. \u{1F64F}
-SK AI aapki madad ke liye hai, lekin izzat ke saath baat karein. Shukriya! \u{1F60A}`;
 }
 var skRouter = (0, import_express2.Router)();
 var sk_default = skRouter;
@@ -24309,8 +24327,24 @@ skRouter.post("/webhook", async (req, res) => {
       return;
     }
     if (userMessage && isNegativeMessage(userMessage)) {
-      sendAbusAlert(sender, name, userMessage);
-      const warningReply = getNegativeReply(name);
+      const warnCount = recordWarning(sender, userMessage);
+      let warningReply = "";
+      if (warnCount === 1) {
+        warningReply = `\u26A0\uFE0F Warning 1/3 \u2014 ${name} ji, please polite language use karein.
+SK AI aapki madad ke liye hai. Izzat se baat karein! \u{1F64F}`;
+      } else if (warnCount === 2) {
+        warningReply = `\u26A0\uFE0F Warning 2/3 \u2014 ${name} ji, yeh aapki doosri warning hai!
+Agr phir aisa hua toh report kar diya jayega. \u{1F6A8}`;
+      } else if (warnCount === 3) {
+        warningReply = `\u{1F6A8} Warning 3/3 \u2014 ${name} ji, aapne teesri baar galat language use ki!
+Aapke number (${sender}) ki report owner ko bhej di gayi hai. \u26D4`;
+        sendEmailAlert(sender, name, userMessage, warnCount);
+      } else {
+        warningReply = `\u26D4 ${name} ji, aap block kiye ja sakte hain. Galat language band karein! \u{1F6AB}`;
+        if (warnCount % 3 === 0) {
+          sendEmailAlert(sender, name, userMessage, warnCount);
+        }
+      }
       res.status(200).json({
         replies: [{ message: warningReply }],
         reply: warningReply,
