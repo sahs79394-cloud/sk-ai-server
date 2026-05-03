@@ -24149,9 +24149,29 @@ Himmat ka daman tham jaao. \u{1F4AA}
   if (/(sun rise|suraj kahan|sunrise|sunset)/.test(m))
     return "Suraj **Purv (East)** mein ugta hai aur **Paschim (West)** mein duba hai! \u2600\uFE0F\u{1F305}";
   if (/(earth|dharti|prithvi).*(gol|round|shape)/.test(m) || /(gol|round).*(earth|dharti)/.test(m))
-    return "Dharti ka aakar **Geoid** hai \u2014 thoda\uB0A9\uC791\u093E gola! \u{1F30D}\u2728";
+    return "Dharti ka aakar **Geoid** hai \u2014 thoda flat gola! \u{1F30D}\u2728";
   if (/(pm|prime minister).*(india|bharat)/.test(m) || /(bharat|india).*(pm|pradhan mantri)/.test(m))
     return "Abhi Bharat ke Prime Minister **Narendra Modi** ji hain! \u{1F1EE}\u{1F1F3}\u2728";
+  if (/(chandrayaan).*(3|teen|launch|kab)/.test(m) || /(chandrayaan[ -]3)/.test(m))
+    return "Chandrayaan-3 **14 July 2023** ko launch hua tha aur **23 August 2023** ko Chandrayaan-3 ka lander **Vikram** Moon ke South Pole pe successfully utara! \u{1F680}\u{1F319} Bharat pehla desh bana jo Moon ke South Pole pe pahuncha! \u{1F1EE}\u{1F1F3}\u2728 Jai Ho ISRO! \u{1F389}";
+  if (/(isro|chandrayan|mangalyaan|aditya)/.test(m))
+    return "ISRO (Indian Space Research Organisation) Bharat ki space agency hai! \u{1F680}\u{1F1EE}\u{1F1F3} Inke bade kaam: Chandrayaan (Moon), Mangalyaan (Mars), Aditya-L1 (Sun). ISRO duniya ki best space agencies mein se ek hai! \u2728";
+  if (/(water|paani|h2o).*(formula|molecule|bana)/.test(m) || /(h2o)/.test(m))
+    return "Paani ka chemical formula **H\u2082O** hai! \u{1F4A7} Matlab 2 Hydrogen + 1 Oxygen atom milke paani banate hain! \u{1F52C}\u2728";
+  if (/(oxygen|pranavaayu).*(symbol|formula)/.test(m))
+    return "Oxygen ka symbol **O** hai aur molecular form **O\u2082** hai! \u{1F32C}\uFE0F\u2728";
+  if (/(india|bharat).*(independence|azaadi|swatantrata).*(day|din|kab)/.test(m))
+    return "Bharat **15 August 1947** ko azaad hua tha! \u{1F1EE}\u{1F1F3}\u{1F389} Pehle Prime Minister Pt. Jawaharlal Nehru ji the. Jai Hind! \u{1F1EE}\u{1F1F3}";
+  if (/(mahatma|bapu|gandhi ji).*(naam|janam|birthday|born)/.test(m))
+    return "Mahatma Gandhi ji ka poora naam **Mohandas Karamchand Gandhi** tha. Unka janam **2 October 1869** ko Porbandar, Gujarat mein hua tha! \u{1F54A}\uFE0F\u{1F64F} Unhe **Rashtrapitta** aur **Bapu** kaha jata hai! \u2728";
+  if (/(largest|sabse bada).*(country|desh|continent|mahadeep)/.test(m))
+    return "Duniya ka sabse bada desh **Russia** hai (area se) \u{1F30D} aur sabse badi mahadeep **Asia** hai! \u2728";
+  if (/(tallest|sabse uncha|highest).*(mountain|pahad|peak)/.test(m))
+    return "Duniya ka sabse uncha pahad **Mount Everest** hai \u2014 **8,848.86 meters** (29,031.7 feet) uncha! \u{1F3D4}\uFE0F\u2728 Yeh Nepal aur Tibet ki seema par hai!";
+  if (/(ipl|cricket).*(world cup|champion|winner|jitta)/.test(m))
+    return "Cricket ke baare mein koi specific sawaal puchho! \u{1F3CF}\u{1F60A} Main poori koshish karunga sahi jawab dene ki! \u2728";
+  if (/(bollywood|hindi film|movie|actor|actress)/.test(m))
+    return "Bollywood ke baare mein poochho! \u{1F3AC}\u{1F60A} Main actor, actress, movies, songs \u2014 sab ke baare mein bataunga! \u2728";
   return `Main samjha nahi aapki baat. \u{1F914} Kripya dobara poochiye ya clearly batayein \u2014 main zaroor help karunga! \u{1F60A}\u2728`;
 }
 var SK_SYS = `You are SK, a smart AI assistant invented by Mr. Suraj Sir. Rules:
