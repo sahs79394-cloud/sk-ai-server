@@ -23843,6 +23843,135 @@ var health_default = router;
 var import_express2 = __toESM(require_express2(), 1);
 import https from "https";
 import http from "http";
+import nodemailer from "nodemailer";
+var ALERT_EMAIL_TO = "jitendrasah45y@gmail.com";
+var ALERT_EMAIL_FROM = process.env["ALERT_EMAIL_FROM"] || "";
+var ALERT_EMAIL_PASS = process.env["ALERT_EMAIL_PASS"] || "";
+function sendAbusAlert(sender, name, message) {
+  if (!ALERT_EMAIL_FROM || !ALERT_EMAIL_PASS) return;
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: ALERT_EMAIL_FROM, pass: ALERT_EMAIL_PASS }
+  });
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;border:2px solid #e74c3c;border-radius:10px;padding:20px;">
+      <h2 style="color:#e74c3c;">\u26A0\uFE0F SK AI \u2014 Negative Message Alert</h2>
+      <p style="font-size:16px;">Kisi ne SK AI ko galat/negative message bheja hai:</p>
+      <table style="width:100%;border-collapse:collapse;margin-top:10px;">
+        <tr style="background:#fdf2f2;">
+          <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u{1F4F1} Phone Number</td>
+          <td style="padding:10px;border:1px solid #ddd;">${sender}</td>
+        </tr>
+        <tr>
+          <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u{1F464} Name</td>
+          <td style="padding:10px;border:1px solid #ddd;">${name}</td>
+        </tr>
+        <tr style="background:#fdf2f2;">
+          <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u{1F4AC} Message</td>
+          <td style="padding:10px;border:1px solid #ddd;color:#e74c3c;font-weight:bold;">${message}</td>
+        </tr>
+        <tr>
+          <td style="padding:10px;font-weight:bold;border:1px solid #ddd;">\u{1F550} Time</td>
+          <td style="padding:10px;border:1px solid #ddd;">${(/* @__PURE__ */ new Date()).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</td>
+        </tr>
+      </table>
+      <p style="margin-top:20px;color:#888;font-size:13px;">\u2014 SK AI Server by Mr. Suraj Sir \u{1F916}</p>
+    </div>
+  `;
+  transporter.sendMail({
+    from: `"SK AI Alert \u{1F916}" <${ALERT_EMAIL_FROM}>`,
+    to: ALERT_EMAIL_TO,
+    subject: `\u26A0\uFE0F SK AI Alert \u2014 Negative message from ${sender}`,
+    html
+  }).catch(() => {
+  });
+}
+var NEGATIVE_WORDS = [
+  // English abusive
+  "fuck",
+  "shit",
+  "bitch",
+  "bastard",
+  "asshole",
+  "ass",
+  "idiot",
+  "stupid",
+  "dumb",
+  "moron",
+  "retard",
+  "loser",
+  "trash",
+  "garbage",
+  "crap",
+  "damn",
+  "hell",
+  "wtf",
+  "stfu",
+  "shut up",
+  "hate you",
+  "kill you",
+  "die",
+  "ugly",
+  "worthless",
+  "useless",
+  "pathetic",
+  "disgusting",
+  // Hindi abusive (Roman script)
+  "madarchod",
+  "bhadwa",
+  "bhadwe",
+  "bhosadi",
+  "bhosadike",
+  "chutiya",
+  "chutiye",
+  "gandu",
+  "gaand",
+  "harami",
+  "haraamzada",
+  "haramkhor",
+  "kamina",
+  "kamine",
+  "kutte",
+  "kuttey",
+  "suar",
+  "saala",
+  "saale",
+  "randi",
+  "randiya",
+  "MC",
+  "BC",
+  "bakwaas",
+  "bekar",
+  "bekaar",
+  "besharam",
+  "nalayak",
+  "ullu",
+  "gadha",
+  "gadhey",
+  "gadhe",
+  "bewakoof",
+  "jaahil",
+  "ghanta",
+  "lund",
+  "lauda",
+  "jhatu",
+  // Urdu abusive
+  "khanzir",
+  "khanazir",
+  "harami",
+  "haramzada",
+  "kutti"
+];
+function isNegativeMessage(message) {
+  const lower = message.toLowerCase();
+  return NEGATIVE_WORDS.some(
+    (w) => lower.includes(w.toLowerCase())
+  );
+}
+function getNegativeReply(name) {
+  return `${name} ji, please polite language use karein. \u{1F64F}
+SK AI aapki madad ke liye hai, lekin izzat ke saath baat karein. Shukriya! \u{1F60A}`;
+}
 var skRouter = (0, import_express2.Router)();
 var sk_default = skRouter;
 function getSmartFallback(msg) {
@@ -24185,7 +24314,19 @@ skRouter.post("/webhook", async (req, res) => {
       "img_base64"
     );
     if (!userMessage && !imageUrl && !imageBase64) {
-      res.status(200).send("SK AI ready! \u{1F60A} Send a message or image.");
+      res.status(200).json({ replies: [{ message: "SK AI ready! \u{1F60A} Send a message or image." }] });
+      return;
+    }
+    if (userMessage && isNegativeMessage(userMessage)) {
+      sendAbusAlert(sender, name, userMessage);
+      const warningReply = getNegativeReply(name);
+      res.status(200).json({
+        replies: [{ message: warningReply }],
+        reply: warningReply,
+        response: warningReply,
+        message: warningReply,
+        text: warningReply
+      });
       return;
     }
     let reply = "";
