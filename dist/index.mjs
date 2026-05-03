@@ -24612,8 +24612,8 @@ function getWikipediaAnswer(query) {
                 const extract = j2?.extract?.trim();
                 if (extract && extract.length > 30) {
                   const sentences = extract.split(/(?<=[.!?])\s+/);
-                  const short = sentences.slice(0, 3).join(" ");
-                  resolve(short.slice(0, 500));
+                  const short = sentences.slice(0, 10).join(" ");
+                  resolve(short.slice(0, 2e3));
                 } else reject(new Error("wiki_empty"));
               } catch {
                 reject(new Error("wiki_parse2"));
@@ -24663,12 +24663,10 @@ async function getAIReply(userMessage) {
     const r = await getPollinationsReply(userMessage);
     if (r && r.length > 4) return r;
   } catch {
-    if (isCreative) {
-      try {
-        const r2 = await getPollinationsReply(userMessage);
-        if (r2 && r2.length > 4) return r2;
-      } catch {
-      }
+    try {
+      const r2 = await getPollinationsReply(userMessage);
+      if (r2 && r2.length > 4) return r2;
+    } catch {
     }
   }
   if (!isCreative) {
