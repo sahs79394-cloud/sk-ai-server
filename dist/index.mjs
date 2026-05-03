@@ -24196,20 +24196,20 @@ Main SK hoon \u2014 Mr. Suraj Sir ka AI! \u{1F916}\u{1F31F}`;
     }
     const finalReply = reply.trim();
     res.status(200).json({
+      replies: [{ message: finalReply }],
       reply: finalReply,
       response: finalReply,
       message: finalReply,
-      text: finalReply,
-      answer: finalReply
+      text: finalReply
     });
   } catch {
     const fallback = getSmartFallback(req.body?.message || "");
     res.status(200).json({
+      replies: [{ message: fallback }],
       reply: fallback,
       response: fallback,
       message: fallback,
-      text: fallback,
-      answer: fallback
+      text: fallback
     });
   }
 });
