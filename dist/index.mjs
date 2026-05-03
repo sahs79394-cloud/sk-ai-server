@@ -23861,7 +23861,9 @@ function getWarningHistory(sender) {
 function sendEmailAlert(sender, name, currentMsg, warningCount) {
   if (!ALERT_EMAIL_FROM || !ALERT_EMAIL_PASS) return;
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: { user: ALERT_EMAIL_FROM, pass: ALERT_EMAIL_PASS }
   });
   const history = getWarningHistory(sender);
@@ -24024,6 +24026,35 @@ function isNegativeMessage(message) {
 }
 var skRouter = (0, import_express2.Router)();
 var sk_default = skRouter;
+skRouter.get("/test-email", async (req, res) => {
+  if (!ALERT_EMAIL_FROM || !ALERT_EMAIL_PASS) {
+    res.json({ ok: false, error: "ALERT_EMAIL_FROM or ALERT_EMAIL_PASS not set", from: ALERT_EMAIL_FROM, passLen: ALERT_EMAIL_PASS.length });
+    return;
+  }
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: { user: ALERT_EMAIL_FROM, pass: ALERT_EMAIL_PASS }
+    });
+    await transporter.verify();
+    await transporter.sendMail({
+      from: `"SK AI Test \u{1F916}" <${ALERT_EMAIL_FROM}>`,
+      to: ALERT_EMAIL_TO,
+      subject: "\u2705 SK AI \u2014 Email Test Successful!",
+      html: `<div style="font-family:Arial;padding:20px;border:2px solid #27ae60;border-radius:10px;">
+        <h2 style="color:#27ae60;">\u2705 Email Working!</h2>
+        <p>SK AI ka email system sahi kaam kar raha hai.</p>
+        <p>Time: ${(/* @__PURE__ */ new Date()).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST</p>
+        <p>\u2014 SK AI v2.0 by Mr. Suraj Sir \u{1F916}</p>
+      </div>`
+    });
+    res.json({ ok: true, message: "Test email sent! Check " + ALERT_EMAIL_TO });
+  } catch (err) {
+    res.json({ ok: false, error: err?.message, code: err?.code, command: err?.command });
+  }
+});
 function getSmartFallback(msg) {
   const m = msg.toLowerCase().trim();
   if (/^(hi+|hello+|hey+|hii+|helo|hy|yo\b|howdy|greetings|good day)/.test(m))
