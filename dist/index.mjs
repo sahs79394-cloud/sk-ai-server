@@ -20872,7 +20872,7 @@ var require_application = __commonJS({
     var finalhandler = require_finalhandler();
     var debug = require_src()("express:application");
     var View = require_view();
-    var http2 = __require("node:http");
+    var http = __require("node:http");
     var methods = require_utils3().methods;
     var compileETag = require_utils3().compileETag;
     var compileQueryParser = require_utils3().compileQueryParser;
@@ -21105,7 +21105,7 @@ var require_application = __commonJS({
       tryRender(view, renderOptions, done);
     };
     app2.listen = function listen() {
-      var server = http2.createServer(this);
+      var server = http.createServer(this);
       var args = slice.call(arguments);
       if (typeof args[args.length - 1] === "function") {
         var done = args[args.length - 1] = once(args[args.length - 1]);
@@ -21880,12 +21880,12 @@ var require_request = __commonJS({
     var accepts = require_accepts();
     var isIP = __require("node:net").isIP;
     var typeis = require_type_is();
-    var http2 = __require("node:http");
+    var http = __require("node:http");
     var fresh = require_fresh();
     var parseRange = require_range_parser();
     var parse = require_parseurl();
     var proxyaddr = require_proxy_addr();
-    var req = Object.create(http2.IncomingMessage.prototype);
+    var req = Object.create(http.IncomingMessage.prototype);
     module.exports = req;
     req.get = req.header = function header(name) {
       if (!name) {
@@ -22933,7 +22933,7 @@ var require_response = __commonJS({
     var deprecate = require_depd()("express");
     var encodeUrl = require_encodeurl();
     var escapeHtml = require_escape_html();
-    var http2 = __require("node:http");
+    var http = __require("node:http");
     var onFinished = require_on_finished();
     var mime = require_mime_types();
     var path = __require("node:path");
@@ -22949,7 +22949,7 @@ var require_response = __commonJS({
     var resolve = path.resolve;
     var vary = require_vary();
     var { Buffer: Buffer2 } = __require("node:buffer");
-    var res = Object.create(http2.ServerResponse.prototype);
+    var res = Object.create(http.ServerResponse.prototype);
     module.exports = res;
     res.status = function status(code) {
       if (!Number.isInteger(code)) {
@@ -23842,7 +23842,6 @@ var health_default = router;
 // src/routes/sk/index.ts
 var import_express2 = __toESM(require_express2(), 1);
 import https from "https";
-import http from "http";
 var ALERT_EMAIL_TO = "jitendrasah45y@gmail.com";
 var RESEND_API_KEY = process.env["RESEND_API_KEY"] || "";
 var warningMap = /* @__PURE__ */ new Map();
@@ -24361,24 +24360,6 @@ Main zaroor help karunga! \u{1F916}\u2728
 function getPollinationsVisionReply(userMessage, imageUrl) {
   return analyzeImage(userMessage, imageUrl);
 }
-function fetchImageAsDataUrl(imageUrl) {
-  return new Promise((resolve, reject) => {
-    const mod = imageUrl.startsWith("https") ? https : http;
-    mod.get(imageUrl, { headers: { "User-Agent": "SK-AI/2.0" } }, (res) => {
-      if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        fetchImageAsDataUrl(res.headers.location).then(resolve).catch(reject);
-        return;
-      }
-      const chunks = [];
-      res.on("data", (c) => chunks.push(c));
-      res.on("end", () => {
-        const buf = Buffer.concat(chunks);
-        const ct = res.headers["content-type"] || "image/jpeg";
-        resolve(`data:${ct};base64,${buf.toString("base64")}`);
-      });
-    }).on("error", reject);
-  });
-}
 skRouter.post("/debug", (req, res) => {
   res.json({
     headers: req.headers,
@@ -24606,21 +24587,12 @@ Mr. Suraj Sir aapka action lenge. \u26D4`;
     let reply = "";
     if (imageUrl || imageBase64) {
       try {
-        const imgSrc = imageUrl || imageBase64;
-        let finalImgUrl = imgSrc;
-        if (imageUrl && !imageUrl.startsWith("data:")) {
-          try {
-            finalImgUrl = await fetchImageAsDataUrl(imageUrl);
-          } catch {
-            finalImgUrl = imageUrl;
-          }
-        }
-        reply = await getPollinationsVisionReply(userMessage || "Is photo mein kya hai?", finalImgUrl);
+        const srcUrl = imageUrl && !imageUrl.startsWith("data:") ? imageUrl : "";
+        reply = await analyzeImage(userMessage || "", srcUrl);
       } catch {
-        reply = `\u{1F4F8} Aapki photo mili ${name} ji! \u{1F60A}
-Photo analysis mein thodi dikkat aayi \u2014 dobara bhejiye! Main try karunga! \u2728
-
-Main SK hoon \u2014 Mr. Suraj Sir ka AI! \u{1F916}\u{1F31F}`;
+        reply = `\u{1F4F8} Photo mili ${name} ji! \u{1F60A}
+Analysis mein thodi dikkat aayi. Kripya batayein is photo mein kya hai? Main help karunga! \u2728
+\u2014 SK AI \u{1F916}`;
       }
     } else {
       try {
