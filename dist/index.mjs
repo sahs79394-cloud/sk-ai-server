@@ -24001,6 +24001,18 @@ function fetchImageAsDataUrl(imageUrl) {
     }).on("error", reject);
   });
 }
+skRouter.post("/debug", (req, res) => {
+  res.json({
+    headers: req.headers,
+    body: req.body,
+    query: req.query,
+    method: req.method,
+    timestamp: (/* @__PURE__ */ new Date()).toISOString()
+  });
+});
+skRouter.get("/debug", (req, res) => {
+  res.json({ message: "Debug endpoint ready. Send POST with your WA app to see fields.", timestamp: (/* @__PURE__ */ new Date()).toISOString() });
+});
 skRouter.get("/healthz", (_req, res) => {
   res.json({
     status: "ok",
@@ -24073,14 +24085,85 @@ Photo analysis abhi busy hai, thodi der baad try karo! \u{1F64F}`;
     });
   }
 });
+function getField(body, ...keys) {
+  const lowerBody = {};
+  for (const k of Object.keys(body)) lowerBody[k.toLowerCase()] = body[k];
+  for (const key of keys) {
+    const val = body[key] ?? lowerBody[key.toLowerCase()];
+    if (val !== void 0 && val !== null && String(val).trim()) return String(val).trim();
+  }
+  return "";
+}
 skRouter.post("/webhook", async (req, res) => {
   try {
     const body = req.body || {};
-    const sender = (body.sender || body.from || body.number || "unknown").toString().trim();
-    const userMessage = (body.message || body.text || body.body || body.msg || "").toString().trim();
-    const name = (body.name || body.pushname || sender).toString().trim();
-    const imageUrl = (body.image_url || body.imageUrl || body.media_url || "").toString().trim();
-    const imageBase64 = (body.image_base64 || body.imageBase64 || "").toString().trim();
+    const sender = getField(
+      body,
+      "sender",
+      "from",
+      "From",
+      "number",
+      "phone",
+      "waNumber",
+      "whatsapp",
+      "msisdn",
+      "mobile",
+      "contact"
+    ) || "unknown";
+    const userMessage = getField(
+      body,
+      "message",
+      "Message",
+      "text",
+      "Text",
+      "body",
+      "Body",
+      "msg",
+      "Msg",
+      "content",
+      "Content",
+      "query",
+      "input",
+      "userMessage",
+      "user_message",
+      "question",
+      "chat"
+    );
+    const name = getField(
+      body,
+      "name",
+      "Name",
+      "pushname",
+      "ProfileName",
+      "username",
+      "userName",
+      "contactName",
+      "displayName",
+      "senderName"
+    ) || sender;
+    const imageUrl = getField(
+      body,
+      "image_url",
+      "imageUrl",
+      "ImageUrl",
+      "media_url",
+      "mediaUrl",
+      "MediaUrl",
+      "MediaUrl0",
+      "photo_url",
+      "photoUrl",
+      "img_url",
+      "image",
+      "photo",
+      "media"
+    );
+    const imageBase64 = getField(
+      body,
+      "image_base64",
+      "imageBase64",
+      "photo_base64",
+      "img_base64"
+    );
     if (!userMessage && !imageUrl && !imageBase64) {
       res.status(200).send("SK AI ready! \u{1F60A} Send a message or image.");
       return;
