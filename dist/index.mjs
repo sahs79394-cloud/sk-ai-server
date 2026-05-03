@@ -24296,7 +24296,7 @@ Himmat ka daman tham jaao. \u{1F4AA}
     return "Duniya ka sabse bada desh area mein **Russia** hai! \u{1F30D}\u2728 (~17 million km\xB2)\nAbaadi mein **China aur India** sabse aage hain! \u{1F1E8}\u{1F1F3}\u{1F1EE}\u{1F1F3}";
   if (/(largest|sabse badi).*(continent|mahadeep)/.test(m))
     return "Duniya ki sabse badi mahadeep **Asia** hai! \u{1F30F}\u2728 Isme India, China, Japan, Russia, Arab countries \u2014 sab aate hain!";
-  if (/(tallest|sabse uncha|highest).*(mountain|pahad|peak|everest)/.test(m))
+  if (/(tallest|sabse uncha|sabse unchi|highest|unchi choti|uchi choti|uncha pahad|unchi pahad|sabse bada pahad).*(mountain|pahad|peak|everest|choti)?/.test(m) && /(mountain|pahad|choti|peak|everest|uncha|unchi)/.test(m))
     return "Duniya ka sabse uncha pahad **Mount Everest** hai \u2014 **8,848.86 meters** uncha! \u{1F3D4}\uFE0F\u2728\nYeh Nepal aur Tibet ki seema par hai. Edmund Hillary pehle insan the jo 1953 mein chadhe!";
   if (/(ocean|mahasagar|samundar).*(kitne|how many|largest|deepest)/.test(m))
     return "Duniya mein **5 Mahasagar (Oceans)** hain! \u{1F30A}\u2728\n1. Pacific (sabse bada)\n2. Atlantic\n3. Indian Ocean (Hindi Mahasagar)\n4. Arctic\n5. Southern Ocean\n\nSabse gehra trench **Mariana Trench** (~11,000m) hai! \u{1F531}";
