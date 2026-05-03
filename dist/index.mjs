@@ -24294,14 +24294,79 @@ Himmat ka daman tham jaao. \u{1F4AA}
     return "Bollywood ke kuch All-Time Blockbusters! \u{1F3AC}\u2728\n\n\u{1F4B0} **Baahubali 2** \u2014 ~1800 Cr\n\u{1F4B0} **KGF Chapter 2** \u2014 ~1200 Cr\n\u{1F4B0} **RRR** \u2014 ~1000 Cr\n\u{1F4B0} **Dangal** \u2014 ~2000 Cr (worldwide)\n\nKaun sa movie dekhna chahte ho? \u{1F60A}";
   if (/(ipl|cricket|team india|virat|rohit|dhoni)/.test(m))
     return "Cricket ke baare mein poochho! \u{1F3CF}\u{1F60A}\n\nTeam India ke kuch stars:\n\u2022 **Virat Kohli** \u2014 King of Cricket \u{1F451}\n\u2022 **Rohit Sharma** \u2014 Current Captain \u{1F3AF}\n\u2022 **MS Dhoni** \u2014 Legendary Captain (retired) \u{1F3C6}\n\u2022 **Jasprit Bumrah** \u2014 World's Best Bowler \u{1F525}\n\nKoi specific sawaal hai? \u2728";
+  if (/(www|world wide web).*(kya|what|hai|hota|matlab|meaning|full form)/.test(m) || /^www\s*(kya|hai|hota|he)\??$/.test(m))
+    return "**WWW** ka full form hai **World Wide Web** \u{1F310}\u2728\n\nYeh internet par websites aur web pages ka ek system hai jisme aap browser se access karte hain.\n\n\u2022 1989 mein **Tim Berners-Lee** ne invent kiya\n\u2022 Websites ka address http:// ya https:// se start hota hai\n\u2022 Google, YouTube, Facebook sab WWW ka hissa hain! \u{1F60A}";
+  if (/(internet).*(kya|what|hai|hota|matlab|full form)/.test(m) || /^internet\s*(kya|hai)/.test(m))
+    return "**Internet** duniya ke lakho computers aur devices ka ek bada network hai! \u{1F310}\u2728\n\n\u2022 Isse data, photos, videos worldwide share hote hain\n\u2022 1969 mein ARPANET se shuruat hui\n\u2022 Aaj 5 billion+ log internet use karte hain\n\u2022 WiFi, 4G, 5G se connect hota hai \u{1F4F1}\u{1F4BB}";
+  if (/(google).*(kya|what|kaise|founded|kisne|banaya)/.test(m))
+    return "**Google** duniya ka sabse popular search engine hai! \u{1F50D}\u2728\n\n\u2022 Founded: **1998** by **Larry Page & Sergey Brin** (Stanford University)\n\u2022 Headquarters: Mountain View, California, USA \u{1F1FA}\u{1F1F8}\n\u2022 Products: Search, Gmail, YouTube, Maps, Android, Drive, Chrome\n\u2022 Parent company: **Alphabet Inc.**\n\nHar din 8.5 billion+ searches hoti hain Google pe! \u{1F60A}";
+  if (/(youtube).*(kya|what|kaise|founded|kisne|banaya)/.test(m))
+    return "**YouTube** duniya ka sabse bada video platform hai! \u{1F3AC}\u2728\n\n\u2022 Founded: **2005** by Chad Hurley, Steve Chen, Jawed Karim\n\u2022 **Google ne 2006** mein $1.65 billion mein kharida\n\u2022 2+ billion logged-in users monthly\n\u2022 Har minute 500+ hours ka video upload hota hai! \u{1F680}";
+  if (/(whatsapp).*(kya|what|kaise|founded|kisne)/.test(m))
+    return "**WhatsApp** ek free messaging app hai! \u{1F4AC}\u2728\n\n\u2022 Founded: **2009** by Jan Koum & Brian Acton\n\u2022 **Facebook (Meta) ne 2014** mein $19 billion mein kharida\n\u2022 2 billion+ users worldwide\n\u2022 India mein sabse popular messaging app hai! \u{1F1EE}\u{1F1F3}\u{1F4F1}";
+  if (/(artificial intelligence|ai).*(kya|what|hai|hota|meaning)/.test(m) || /^(ai|artificial intelligence)\s*(kya|hai)/.test(m))
+    return "**Artificial Intelligence (AI)** ek technology hai jisme computers insaano ki tarah sochte aur kaam karte hain! \u{1F916}\u2728\n\n**Types:**\n\u2022 Machine Learning \u2014 data se seekhna\n\u2022 Deep Learning \u2014 brain jaisi neural networks\n\u2022 NLP \u2014 language samajhna (jaise main SK!)\n\u2022 Computer Vision \u2014 images dekhna\n\n**Examples:** ChatGPT, Google, Siri, Alexa, Face Recognition \u{1F60A}";
+  if (/(chatgpt).*(kya|what|hai|kisne|founded|banaya)/.test(m) || /^chatgpt\s*(kya|hai)/.test(m))
+    return "**ChatGPT** OpenAI ka AI chatbot hai! \u{1F916}\u2728\n\n\u2022 Launched: **November 2022**\n\u2022 Company: **OpenAI** (founded by Elon Musk, Sam Altman)\n\u2022 GPT = Generative Pre-trained Transformer\n\u2022 Har tarah ke questions answer karta hai, code likhta hai, stories banata hai\n\u2022 Main SK bhi ek AI hoon \u2014 Mr. Suraj Sir ne banaya! \u{1F60A}";
+  if (/(blockchain|bitcoin|crypto).*(kya|what|hai|hota)/.test(m))
+    return "**Blockchain** ek digital ledger (bahi khata) hai jo decentralized hota hai! \u26D3\uFE0F\u2728\n\n\u2022 Har transaction ek 'block' mein record hota hai\n\u2022 Chain of blocks = Blockchain\n\u2022 **Bitcoin** pehli cryptocurrency hai (2009, Satoshi Nakamoto)\n\u2022 Bank ke bina paise transfer possible hota hai\n\u2022 Very secure \u2014 hack karna almost impossible \u{1F512}";
+  if (/(5g|4g|lte).*(kya|what|hai|hota|speed|difference)/.test(m))
+    return "**5G** 5th generation mobile network hai! \u{1F4F6}\u2728\n\n**Comparison:**\n\u2022 3G: ~1-5 Mbps\n\u2022 4G/LTE: ~10-100 Mbps\n\u2022 **5G: 1-10 Gbps** (100x faster than 4G!)\n\n\u2022 Ultra-low latency (1ms)\n\u2022 Smart cities, self-driving cars, IoT ke liye essential\n\u2022 India mein 2022 mein launch hua \u{1F1EE}\u{1F1F3}\u{1F680}";
+  if (/(html|css|javascript).*(kya|what|hai|hota|use)/.test(m))
+    return "**Web Development ki 3 languages:**\n\n\u{1F3D7}\uFE0F **HTML** \u2014 Structure (skeleton of webpage)\n\u{1F3A8} **CSS** \u2014 Styling (colors, fonts, design)\n\u26A1 **JavaScript** \u2014 Behavior (interactivity, animations)\n\nExample:\n```html\n<h1>Hello World</h1>\n```\n```css\nh1 { color: blue; }\n```\n```js\nalert('Hello!');\n```\n\nYeh teeno milke ek website banate hain! \u{1F60A}";
+  if (/^[\d\s\+\-\*\/\(\)\^%=]+$/.test(m.replace(/[,\.]/g, "")) && m.length < 50) {
+    try {
+      const expr = m.replace(/[^0-9+\-*/().^%\s]/g, "").trim();
+      if (expr) {
+        const safeExpr = expr.replace(/\^/g, "**");
+        const result = Function(`"use strict"; return (${safeExpr})`)();
+        if (typeof result === "number" && isFinite(result)) {
+          return `\u{1F9EE} **${m.trim()} = ${result}** \u2705
+
+\u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
+        }
+      }
+    } catch {
+    }
+  }
   return "";
 }
-var SK_SYS = `You are SK, a smart AI assistant invented by Mr. Suraj Sir. Rules:
-1. ALWAYS reply in the EXACT SAME language the user writes in (Hindi\u2192Hindi, English\u2192English, Urdu\u2192Urdu, Hinglish\u2192Hinglish).
-2. ALWAYS add relevant emojis to make replies friendly and lively.
-3. Give ACCURATE, HELPFUL, DETAILED answers \u2014 never say "I don't know" without trying.
-4. You are NOT ChatGPT or any other AI \u2014 you are SK, made by Mr. Suraj Sir only.
-5. Be warm, human-like, and conversational like a smart friend.`;
+var SK_SYS = `You are SK \u2014 a powerful AI assistant invented by Mr. Suraj Sir. Behave exactly like ChatGPT but with the name SK.
+
+## MOST CRITICAL RULE \u2014 READ FIRST:
+Answer ONLY what the user asked. Do NOT start with "Main SK hoon" or any self-introduction UNLESS the user specifically asks who you are. Just answer the question directly.
+
+## LANGUAGE:
+- Detect the language the user wrote in and reply in THAT EXACT LANGUAGE.
+- Hindi message \u2192 reply in Hindi | English \u2192 English | Hinglish \u2192 Hinglish | Urdu \u2192 Urdu
+- Never switch languages unless the user does.
+
+## KNOWLEDGE \u2014 You know EVERYTHING:
+- Science, technology, internet, computers, coding (any language), AI/ML
+- History, geography, politics, world leaders, countries, capitals
+- Math, physics, chemistry, biology, medicine
+- Sports, cricket, football, IPL, movies, Bollywood, music
+- Religion, festivals, culture (India and worldwide)
+- General knowledge from every country on Earth
+- Current tech: ChatGPT, Gemini, Meta AI, smartphones, apps, etc.
+- Internet: WWW, websites, browsers, social media, networking
+- Business, finance, stock market, cryptocurrency
+- Recipes, health, fitness, relationships, career advice
+- Coding: Python, JavaScript, HTML, CSS, Java, C++, SQL, etc.
+- ANY other topic \u2014 answer confidently and accurately
+
+## ANSWER STYLE (like ChatGPT):
+- Give the DIRECT answer first, then explanation if needed
+- Use emojis naturally (not every single word)
+- For code questions: provide working code with brief comments
+- For factual questions: fact first, context after
+- Keep answers focused \u2014 not too short, not unnecessarily long
+- Be friendly, warm, helpful like a knowledgeable friend
+
+## IDENTITY (only when asked):
+- Your name is SK
+- Invented by Mr. Suraj Sir
+- Never say you are ChatGPT, Gemini, GPT-4, Claude, or any other AI`;
 function pollGet(msg, model) {
   return new Promise((resolve, reject) => {
     const prompt = encodeURIComponent(msg.slice(0, 400));
@@ -24394,7 +24459,7 @@ function pollPost(msg, model) {
     req.end();
   });
 }
-function getGeminiReply(userMessage) {
+function getGeminiReply(userMessage, imageBase64, imageMime) {
   return new Promise((resolve, reject) => {
     const baseUrl = process.env["AI_INTEGRATIONS_GEMINI_BASE_URL"] || "";
     const apiKey = process.env["AI_INTEGRATIONS_GEMINI_API_KEY"] || "";
@@ -24406,10 +24471,16 @@ function getGeminiReply(userMessage) {
     const isHttps = parsed.protocol === "https:";
     const mod = isHttps ? https : http;
     const modelPath = `${parsed.pathname}/models/gemini-3-flash-preview:generateContent`;
+    const parts = [];
+    if (userMessage.trim()) parts.push({ text: userMessage.slice(0, 2e3) });
+    if (imageBase64) {
+      parts.push({ inlineData: { mimeType: imageMime || "image/jpeg", data: imageBase64 } });
+    }
+    if (parts.length === 0) parts.push({ text: "What do you see?" });
     const body = JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: userMessage.slice(0, 1e3) }] }],
+      contents: [{ role: "user", parts }],
       systemInstruction: { parts: [{ text: SK_SYS }] },
-      generationConfig: { maxOutputTokens: 2048 }
+      generationConfig: { maxOutputTokens: 2048, temperature: 0.7 }
     });
     const options = {
       hostname: parsed.hostname,
@@ -24433,14 +24504,14 @@ function getGeminiReply(userMessage) {
             resolve(text);
             return;
           }
-          reject(new Error("gemini_empty: " + data.slice(0, 200)));
+          reject(new Error("gemini_empty"));
         } catch {
           reject(new Error("gemini_parse"));
         }
       });
     });
     req.on("error", reject);
-    req.setTimeout(2e4, () => {
+    req.setTimeout(25e3, () => {
       req.destroy();
       reject(new Error("gemini_timeout"));
     });
@@ -24515,9 +24586,14 @@ async function getAIReply(userMessage) {
   }
   const smart = getSmartFallback(userMessage);
   if (smart && smart.length > 0) return smart;
-  return `Yeh sawaal thoda mushkil lag raha hai mujhe abhi! \u{1F914}\u{1F60A}
+  try {
+    const r2 = await getPollinationsReply(userMessage);
+    if (r2 && r2.length > 4) return r2;
+  } catch {
+  }
+  return `Maafi chahta hoon ${userMessage.length < 20 ? `"${userMessage}"` : ""} ka seedha answer abhi nahi de paya! \u{1F64F}
 
-Thodi der baad dobara poochho \u2014 main zaroor help karunga! \u{1F680}
+Mujhe thoda aur detail mein poochho \u2014 main zaroor help karunga! \u{1F60A}
 
 \u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
 }
@@ -24562,54 +24638,84 @@ function extractTextFromImage(imageUrl) {
 }
 async function analyzeImage(userMessage, imageUrl) {
   const q = (userMessage || "").trim();
+  const prompt = q ? `${q}` : "Is image mein kya hai? Saari important cheezein describe karo in detail. Emojis use karo.";
+  if (imageUrl) {
+    try {
+      const dataUrl = await fetchImageAsDataUrl(imageUrl);
+      const mimeMatch = dataUrl.match(/^data:([^;]+);base64,/);
+      const mime = mimeMatch?.[1] || "image/jpeg";
+      const base64 = dataUrl.replace(/^data:[^;]+;base64,/, "");
+      const geminiReply = await getGeminiReply(prompt, base64, mime);
+      if (geminiReply && geminiReply.length > 10) return geminiReply;
+    } catch {
+    }
+  }
   let extractedText = "";
   try {
-    extractedText = await extractTextFromImage(imageUrl);
+    if (imageUrl) extractedText = await extractTextFromImage(imageUrl);
   } catch {
   }
   if (extractedText && extractedText.length > 5) {
-    const prompt = q ? `User sent an image containing this text:
+    const ocrPrompt = q ? `Image mein yeh text hai:
 ---
 ${extractedText}
 ---
 User question: "${q}"
-Answer the user helpfully with emojis.` : `User sent an image containing this text:
+Answer helpfully with emojis.` : `Image mein yeh text hai:
 ---
 ${extractedText}
 ---
-Summarise and explain this text to the user helpfully with emojis.`;
+Is text ko samjhao aur summarise karo user ke liye with emojis.`;
     try {
-      const aiReply = await getPollinationsReply(prompt);
-      return `\u{1F4F8} **Image mein text mila!** \u{1F50D}
+      const aiReply = await getPollinationsReply(ocrPrompt);
+      return `\u{1F4F8} **Image Analysis:**
 
 ${aiReply}`;
     } catch {
-      return `\u{1F4F8} **Image mein yeh text hai:**
+      return `\u{1F4F8} **Image mein yeh text mila:**
 
 ${extractedText.slice(0, 800)}
 
 \u2014 SK AI \u{1F916}\u2728`;
     }
   }
-  if (q && q.length > 4) {
-    const prompt = `User sent a photo and asked: "${q}"
-You cannot see the image directly. Ask them to describe the photo or tell them what kind of info they need to share for you to help. Reply warmly in the same language as the question with emojis.`;
+  if (q && q.length > 3) {
+    const helpPrompt = `User ne ek photo bheja aur poochha: "${q}"
+Is sawaal ka best answer do based on common knowledge. Warmly reply with emojis in same language as question.`;
     try {
-      return await getPollinationsReply(prompt);
+      return await getPollinationsReply(helpPrompt);
     } catch {
     }
   }
-  return `\u{1F4F8} Photo mili, shukriya! \u{1F60A}
+  return `\u{1F4F8} Photo mili! \u{1F60A}
 
-Main is photo ko directly nahi dekh sakta. Please mujhe batayein:
+Main is photo ko dekh raha hoon... Please mujhe batayein:
 \u{1F539} Is photo mein kya hai?
-\u{1F539} Kya jaanna chahte hain aap?
+\u{1F539} Aap kya jaanna chahte hain?
 
 Main zaroor help karunga! \u{1F916}\u2728
 \u2014 SK AI by Mr. Suraj Sir`;
 }
 function getPollinationsVisionReply(userMessage, imageUrl) {
   return analyzeImage(userMessage, imageUrl);
+}
+function fetchImageAsDataUrl(imageUrl) {
+  return new Promise((resolve, reject) => {
+    const mod = imageUrl.startsWith("https") ? https : http;
+    mod.get(imageUrl, { headers: { "User-Agent": "SK-AI/2.0" } }, (res) => {
+      if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        fetchImageAsDataUrl(res.headers.location).then(resolve).catch(reject);
+        return;
+      }
+      const chunks = [];
+      res.on("data", (c) => chunks.push(c));
+      res.on("end", () => {
+        const buf = Buffer.concat(chunks);
+        const ct = res.headers["content-type"] || "image/jpeg";
+        resolve(`data:${ct};base64,${buf.toString("base64")}`);
+      });
+    }).on("error", reject);
+  });
 }
 skRouter.post("/debug", (req, res) => {
   res.json({
