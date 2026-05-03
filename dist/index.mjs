@@ -24681,29 +24681,28 @@ async function getAIReply(userMessage) {
     if (r && r.length > 3) return r;
   } catch {
   }
-  const smart = getSmartFallback(userMessage);
-  if (smart && smart.length > 0) return smart;
   try {
     const r = await getPollinationsReply(userMessage);
     if (r && r.length > 4) return r;
   } catch {
   }
   try {
-    const [ddgResult, wikiResult] = await Promise.allSettled([
-      getDDGAnswer(userMessage),
-      getWikipediaAnswer(userMessage)
-    ]);
-    const ddg = ddgResult.status === "fulfilled" ? ddgResult.value : "";
-    const wiki = wikiResult.status === "fulfilled" ? wikiResult.value : "";
-    const best = ddg.length > 30 ? ddg : wiki;
-    if (best && best.length > 30) {
-      return `${best} \u{1F60A}\u2728
+    const ddg = await getDDGAnswer(userMessage);
+    if (ddg && ddg.length > 20) return `${ddg} \u{1F60A}
 
 \u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
-    }
   } catch {
   }
-  return `Yeh sawaal thoda complex hai! \u{1F914} Please zyada detail mein poochho \u2014 main zaroor help karunga! \u{1F60A}
+  try {
+    const wiki = await getWikipediaAnswer(userMessage);
+    if (wiki && wiki.length > 30) return `${wiki} \u{1F60A}
+
+\u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
+  } catch {
+  }
+  const smart = getSmartFallback(userMessage);
+  if (smart && smart.length > 0) return smart;
+  return `Maafi chahta hoon, abhi is sawaal ka jawab nahi de paya! \u{1F64F} Thodi der baad dobara try karo ya sawaal ko aur clearly likho \u2014 main zaroor help karunga! \u{1F60A}
 
 \u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
 }
