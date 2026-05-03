@@ -24271,56 +24271,95 @@ async function getPollinationsReply(userMessage, _imageBase64) {
   }
   throw new Error("all_models_failed");
 }
-function getPollinationsVisionReply(userMessage, imageUrl) {
+function extractTextFromImage(imageUrl) {
   return new Promise((resolve, reject) => {
-    const body = JSON.stringify({
-      model: "openai",
-      messages: [
-        {
-          role: "system",
-          content: "You are SK, an AI invented by Mr. Suraj Sir. Analyze the image in detail with emojis. Reply in the SAME language the user uses (Hindi\u2192Hindi, English\u2192English, Urdu\u2192Urdu)."
-        },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: userMessage || "Is photo mein kya hai? Detail mein batao." },
-            { type: "image_url", image_url: { url: imageUrl } }
-          ]
-        }
-      ],
-      seed: Math.floor(Math.random() * 2147483647)
-    });
+    const formBody = `url=${encodeURIComponent(imageUrl)}&apikey=K88888888888888&language=eng&isTable=false&scale=true&isOverlayRequired=false`;
     const req = https.request({
-      hostname: "text.pollinations.ai",
-      path: "/openai",
+      hostname: "api.ocr.space",
+      path: "/parse/imageurl",
       method: "POST",
-      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body), "User-Agent": "SK-AI/3.0" }
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Length": Buffer.byteLength(formBody),
+        "User-Agent": "SK-AI/3.0"
+      }
     }, (res) => {
       let data = "";
       res.on("data", (c) => data += c);
       res.on("end", () => {
         try {
-          const j = JSON.parse(data.trim());
-          if (j.error || j.status >= 400) {
-            reject(new Error("vision_error"));
+          const j = JSON.parse(data);
+          if (j.IsErroredOnProcessing) {
+            reject(new Error("ocr_error"));
             return;
           }
-          const content = j?.choices?.[0]?.message?.content;
-          if (content?.trim()) resolve(content.trim());
-          else reject(new Error("no_content"));
+          const text = j?.ParsedResults?.[0]?.ParsedText?.trim();
+          if (text && text.length > 3) resolve(text);
+          else reject(new Error("no_text"));
         } catch {
           reject(new Error("parse_error"));
         }
       });
     });
     req.on("error", reject);
-    req.setTimeout(22e3, () => {
+    req.setTimeout(18e3, () => {
       req.destroy();
       reject(new Error("timeout"));
     });
-    req.write(body);
+    req.write(formBody);
     req.end();
   });
+}
+async function analyzeImage(userMessage, imageUrl) {
+  const q = (userMessage || "").trim();
+  let extractedText = "";
+  try {
+    extractedText = await extractTextFromImage(imageUrl);
+  } catch {
+  }
+  if (extractedText && extractedText.length > 5) {
+    const prompt = q ? `User sent an image containing this text:
+---
+${extractedText}
+---
+User question: "${q}"
+Answer the user helpfully with emojis.` : `User sent an image containing this text:
+---
+${extractedText}
+---
+Summarise and explain this text to the user helpfully with emojis.`;
+    try {
+      const aiReply = await getPollinationsReply(prompt);
+      return `\u{1F4F8} **Image mein text mila!** \u{1F50D}
+
+${aiReply}`;
+    } catch {
+      return `\u{1F4F8} **Image mein yeh text hai:**
+
+${extractedText.slice(0, 800)}
+
+\u2014 SK AI \u{1F916}\u2728`;
+    }
+  }
+  if (q && q.length > 4) {
+    const prompt = `User sent a photo and asked: "${q}"
+You cannot see the image directly. Ask them to describe the photo or tell them what kind of info they need to share for you to help. Reply warmly in the same language as the question with emojis.`;
+    try {
+      return await getPollinationsReply(prompt);
+    } catch {
+    }
+  }
+  return `\u{1F4F8} Photo mili, shukriya! \u{1F60A}
+
+Main is photo ko directly nahi dekh sakta. Please mujhe batayein:
+\u{1F539} Is photo mein kya hai?
+\u{1F539} Kya jaanna chahte hain aap?
+
+Main zaroor help karunga! \u{1F916}\u2728
+\u2014 SK AI by Mr. Suraj Sir`;
+}
+function getPollinationsVisionReply(userMessage, imageUrl) {
+  return analyzeImage(userMessage, imageUrl);
 }
 function fetchImageAsDataUrl(imageUrl) {
   return new Promise((resolve, reject) => {
