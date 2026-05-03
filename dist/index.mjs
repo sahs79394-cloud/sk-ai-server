@@ -24194,11 +24194,23 @@ Main SK hoon \u2014 Mr. Suraj Sir ka AI! \u{1F916}\u{1F31F}`;
         reply = getSmartFallback(userMessage);
       }
     }
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.status(200).send(reply.trim());
+    const finalReply = reply.trim();
+    res.status(200).json({
+      reply: finalReply,
+      response: finalReply,
+      message: finalReply,
+      text: finalReply,
+      answer: finalReply
+    });
   } catch {
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.status(200).send(getSmartFallback(req.body?.message || ""));
+    const fallback = getSmartFallback(req.body?.message || "");
+    res.status(200).json({
+      reply: fallback,
+      response: fallback,
+      message: fallback,
+      text: fallback,
+      answer: fallback
+    });
   }
 });
 
