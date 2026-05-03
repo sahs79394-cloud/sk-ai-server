@@ -24635,6 +24635,19 @@ function getWikipediaAnswer(query) {
   });
 }
 async function getAIReply(userMessage) {
+  if (/[+\-*\/]/.test(userMessage)) {
+    const pureMath = userMessage.replace(/[^0-9+\-*/.()%\s]/g, "").trim();
+    if (/^[\d\s\+\-\*\/\.\(\)\%]+$/.test(pureMath) && pureMath.length > 0) {
+      try {
+        const result = Function(`"use strict"; return (${pureMath})`)();
+        if (typeof result === "number" && isFinite(result)) {
+          const pretty = Number.isInteger(result) ? result : parseFloat(result.toFixed(6));
+          return `${userMessage.trim()} = **${pretty}** \u{1F522}\u2728`;
+        }
+      } catch {
+      }
+    }
+  }
   try {
     const r = await getGeminiReply(userMessage);
     if (r && r.length > 3) return r;
