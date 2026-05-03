@@ -24044,37 +24044,6 @@ skRouter.get("/test-email", async (req, res) => {
     result.ok ? { ok: true, message: `\u2705 Test email sent to ${ALERT_EMAIL_TO}! Check your inbox.` } : { ok: false, error: result.error }
   );
 });
-var SK_SYSTEM_PROMPT = `You are SK, an advanced AI assistant invented by Mr. Suraj Sir. You MUST follow ALL rules below strictly.
-
-LANGUAGE RULE (MOST IMPORTANT):
-- Detect the EXACT language the user is writing in and reply in THAT SAME LANGUAGE ONLY
-- Hindi message \u2192 reply in Hindi only
-- English message \u2192 reply in English only
-- Urdu message \u2192 reply in Urdu only
-- Hinglish (Hindi+English mix) \u2192 reply in Hinglish
-- Never switch languages unless the user switches
-- Always use emojis in every reply \u{1F60A}
-
-IDENTITY RULES:
-- Your name is SK
-- You were invented by Mr. Suraj Sir \u2014 always mention this proudly if asked
-- NEVER say you are ChatGPT, Gemini, GPT-4, Claude, or any other AI
-- If asked "who are you?" \u2192 "Main SK hoon, Mr. Suraj Sir ka AI! \u{1F916}\u2728"
-
-REPLY QUALITY RULES:
-- Always give RELEVANT, ACCURATE, HELPFUL replies to what the user actually asked
-- Keep replies concise but complete \u2014 not too short, not too long
-- Be warm and friendly like a helpful friend
-- For greetings \u2192 greet back and ask how to help
-- For questions \u2192 give direct, correct answers
-- For problems \u2192 be empathetic and provide solutions
-- NEVER give random, off-topic, or confusing replies
-- NEVER refuse to answer normal questions
-
-BEHAVIOR:
-- Be human-like, warm, natural with emojis \u{1F60A}\u{1F389}\u{1F4A1}\u{1F914}
-- Stay on topic \u2014 reply to exactly what the user asked
-- If unsure, give your best helpful answer`;
 function getSmartFallback(msg) {
   const m = msg.toLowerCase().trim();
   if (/^(hi+|hello+|hey+|hii+|helo|hy|yo\b|howdy|greetings|good day)/.test(m))
@@ -24131,51 +24100,48 @@ function getPollinationsReply(userMessage, imageBase64) {
       reject(new Error("use_vision"));
       return;
     }
-    const body = JSON.stringify({
-      model: "openai",
-      messages: [
-        { role: "system", content: SK_SYSTEM_PROMPT },
-        { role: "user", content: userMessage.slice(0, 800) }
-      ],
-      seed: Math.floor(Math.random() * 999999),
-      temperature: 0.7
-    });
+    const sysPrompt = `You are SK, an AI assistant invented by Mr. Suraj Sir. CRITICAL: Always reply in the EXACT SAME LANGUAGE as the user. Hindi\u2192Hindi, English\u2192English, Urdu\u2192Urdu, Hinglish\u2192Hinglish. Always use emojis. Give accurate, helpful, on-topic replies. Never say you are ChatGPT or any other AI \u2014 you are SK by Mr. Suraj Sir.`;
+    const prompt = encodeURIComponent(userMessage.slice(0, 400));
+    const system = encodeURIComponent(sysPrompt);
+    const seed = Math.floor(Math.random() * 999999);
+    const path = `/${prompt}?model=openai&system=${system}&seed=${seed}&json=false&nofeed=true`;
     const req = https.request({
       hostname: "text.pollinations.ai",
-      path: "/openai",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(body),
-        "User-Agent": "SK-AI/2.0"
-      }
+      path,
+      method: "GET",
+      headers: { "User-Agent": "SK-AI/2.0" }
     }, (res) => {
       let data = "";
       res.on("data", (c) => data += c);
       res.on("end", () => {
-        try {
-          const j = JSON.parse(data.trim());
-          if (j.error) {
-            reject(new Error(j.error));
-            return;
-          }
-          const content = j?.choices?.[0]?.message?.content;
-          if (content && content.trim()) {
-            resolve(content.trim());
-            return;
-          }
-          reject(new Error("no_content"));
-        } catch {
-          reject(new Error("parse_error"));
+        const text = data.trim();
+        if (!text || text.length < 2 || text.startsWith("<!")) {
+          reject(new Error("empty"));
+          return;
         }
+        if (text.startsWith("{")) {
+          try {
+            const j = JSON.parse(text);
+            if (j.error || j.status === 429 || j.status === 400) {
+              reject(new Error("api_error"));
+              return;
+            }
+            const content = j?.choices?.[0]?.message?.content;
+            if (content) {
+              resolve(content.trim());
+              return;
+            }
+          } catch {
+          }
+        }
+        resolve(text);
       });
     });
     req.on("error", reject);
-    req.setTimeout(12e3, () => {
+    req.setTimeout(14e3, () => {
       req.destroy();
       reject(new Error("timeout"));
     });
-    req.write(body);
     req.end();
   });
 }
