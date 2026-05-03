@@ -24132,47 +24132,121 @@ Himmat ka daman tham jaao. \u{1F4AA}
     ];
     return poems[Math.floor(Math.random() * poems.length)];
   }
-  const mathMatch = m.match(/^[\s\d\+\-\*\/\^\(\)\.\%\s]+$/);
-  if (mathMatch) {
+  const nlMath = m.replace(/\b(multiplied by|times|x)\b/g, "*").replace(/\b(divided by|div)\b/g, "/").replace(/\b(plus|add)\b/g, "+").replace(/\b(minus|subtract)\b/g, "-").replace(/\b(squared|square)\b/g, "**2").replace(/\b(percent of)\b/g, "/100*").replace(/[^0-9+\-*/.()%\s\*]/g, " ").trim();
+  const mathOnlyMatch = nlMath.match(/^[\d\s\+\-\*\/\.\(\)\%\^]+$/);
+  if (mathOnlyMatch) {
     try {
-      const clean = m.replace(/[^0-9+\-*/.()%\s]/g, "");
-      const result = Function(`"use strict"; return (${clean})`)();
-      if (typeof result === "number" && isFinite(result))
-        return `${clean.trim()} = **${result}** \u{1F522}\u2728`;
+      const result = Function(`"use strict"; return (${nlMath.replace(/[^0-9+\-*/.()%\s]/g, "")})`)();
+      if (typeof result === "number" && isFinite(result)) {
+        const pretty = Number.isInteger(result) ? result : parseFloat(result.toFixed(6));
+        return `${msg.trim()} = **${pretty}** \u{1F522}\u2728`;
+      }
     } catch {
     }
   }
-  if (/(capital of india|bharat ki rajdhani|india capital)/.test(m))
+  const pureMath = m.replace(/[^0-9+\-*/.()%\s]/g, "").trim();
+  if (/^[\d\s\+\-\*\/\.\(\)\%]+$/.test(pureMath) && pureMath.length > 0) {
+    try {
+      const result = Function(`"use strict"; return (${pureMath})`)();
+      if (typeof result === "number" && isFinite(result)) {
+        return `${pureMath.trim()} = **${result}** \u{1F522}\u2728`;
+      }
+    } catch {
+    }
+  }
+  if (/(solar system|saur mandal).*(planets|grah|kitne)/.test(m) || /(kitne|how many).*(planets|grah)/.test(m))
+    return "Solar System mein **8 planets** hain! \u{1FA90}\u2728\n\n1. \u{1F534} Mercury (Budh)\n2. \u{1F7E1} Venus (Shukra)\n3. \u{1F535} Earth (Prithvi)\n4. \u{1F534} Mars (Mangal)\n5. \u{1F7E0} Jupiter (Brihaspati)\n6. \u{1F49B} Saturn (Shani)\n7. \u{1F535} Uranus (Arun)\n8. \u{1F535} Neptune (Varun)\n\nSabse bada planet **Jupiter** hai! \u{1F60A}";
+  if (/(sun|surya).*(star|tara|planet)/.test(m) || /(is sun a star|kya suraj ek tara)/.test(m))
+    return "Suraj (Sun) ek **tara (star)** hai \u2014 planet nahi! \u2B50\u{1F31E} Yeh hamare Solar System ka center hai. Iska temperature surface par ~5,500\xB0C hai! \u{1F525}\u2728";
+  if (/(moon|chaand|chandra).*(planet|tara|star|kya hai)/.test(m))
+    return "Chaand (Moon) ek **natural satellite** hai Prithvi (Earth) ka! \u{1F319} Yeh planet ya star nahi hai. Chandrayaan-3 wahan 2023 mein utara tha! \u{1F680}\u{1F1EE}\u{1F1F3}";
+  if (/(gravity|gravitation|gurutvakarshan)/.test(m))
+    return "**Gravity (Gurutvakarshan)** woh force hai jo har cheez ko Earth ki taraf kheenchti hai! \u{1F30D}\u2B07\uFE0F\nIsaac Newton ne apple girte dekh yeh discover kiya tha. Earth ki gravity = **9.8 m/s\xB2** \u{1F4D0}\u2728";
+  if (/(speed|velocity|raftar).*(light|prakaash)/.test(m) || /(light speed|prakash ki raftar)/.test(m))
+    return "Prakash (Light) ki speed **3,00,000 km/second** (3 lakh km/s) hai! \u26A1\u2728 Matlab 1 second mein Prithvi ke 7.5 chakkar! Space mein yeh sabse fast cheez hai! \u{1F680}";
+  if (/(dna|chromosome|gene|genetics)/.test(m))
+    return "**DNA (Deoxyribonucleic Acid)** hamare body ki genetic information carry karta hai! \u{1F9EC}\u2728 Har human cell mein **46 chromosomes** hote hain (23 pairs). DNA se hi hum apne parents jaisa dikhte hain! \u{1F468}\u200D\u{1F469}\u200D\u{1F466}";
+  if (/(blood group|blood type|rakt samuh)/.test(m))
+    return "Blood groups 4 types ke hote hain: **A, B, AB, O** \u{1FA78}\u2728\n\u2022 **O+** sabse common hai\n\u2022 **AB** universal receiver hai\n\u2022 **O-** universal donor hai\n\nAapka blood group pata karna chahte ho to doctor se milein! \u{1F3E5}";
+  if (/(photosynthesis|prakash sangleshan)/.test(m))
+    return "**Photosynthesis (Prakash Sangleshan)** plants ki process hai jisme woh:\n\u{1F331} Sunlight + CO\u2082 + Water \u2192 **Glucose + Oxygen** banate hain!\n\n6CO\u2082 + 6H\u2082O + Light \u2192 C\u2086H\u2081\u2082O\u2086 + 6O\u2082 \u{1F33F}\u2728\nIssi liye trees oxygen dete hain! \u{1F60A}";
+  if (/(python).*(hello world|first program|print|kaise likhte)/.test(m))
+    return 'Python mein Hello World likhne ka tarika! \u{1F40D}\u2728\n\n```python\nprint("Hello, World!")\n```\n\nBas itna! Run karo aur output milega:\n`Hello, World!` \u{1F389}\n\nPython ka magic yeh hai ki code bahut simple hota hai! \u{1F60A}';
+  if (/(what is python|python kya hai|python language)/.test(m))
+    return "**Python** ek popular programming language hai! \u{1F40D}\u2728\n\n\u2022 Simple aur easy to learn\n\u2022 Web development (Django, Flask)\n\u2022 AI/ML ke liye best choice\n\u2022 Data Science, Automation\n\nGuido van Rossum ne 1991 mein banaya! \u{1F468}\u200D\u{1F4BB} Beginners ke liye perfect language! \u{1F60A}";
+  if (/(javascript|js\b).*(kya hai|what is|learn)/.test(m))
+    return "**JavaScript (JS)** web programming ki language hai! \u{1F4BB}\u2728\n\n\u2022 Websites ko interactive banata hai\n\u2022 Frontend: React, Vue, Angular\n\u2022 Backend: Node.js\n\n```js\nconsole.log('Hello World!');\n```\n\nEvery website JavaScript use karta hai! \u{1F310}\u{1F60A}";
+  if (/(html).*(kya hai|what is|full form)/.test(m))
+    return "**HTML** ka full form hai **HyperText Markup Language**! \u{1F310}\u2728\n\nYeh websites ka skeleton/structure banata hai:\n```html\n<h1>Hello World</h1>\n<p>Main ek paragraph hoon</p>\n```\n\nHTML ke bina website exist nahi kar sakti! \u{1F60A}";
+  if (/(artificial intelligence|ai kya|machine learning|deep learning)/.test(m))
+    return "**Artificial Intelligence (AI)** ek technology hai jisme computers insaano ki tarah soch aur kaam karte hain! \u{1F916}\u2728\n\n\u2022 **Machine Learning**: data se seekhna\n\u2022 **Deep Learning**: brain jaisi neural networks\n\u2022 **NLP**: language samajhna\n\nMain SK bhi AI hoon \u2014 Mr. Suraj Sir ne banaya! \u{1F60A}\u{1F31F}";
+  if (/(internet|wifi|network|broadband).*(kya hai|what is)/.test(m))
+    return "**Internet** duniya ke computers ka ek bada network hai jisme sab ek doosre se connected hain! \u{1F310}\u2728\n\nWiFi \u2192 Router \u2192 ISP \u2192 Internet ka safar kuch aise hota hai:\n\u{1F4F1} \u2192 \u{1F4F6} \u2192 \u{1F3E2} \u2192 \u{1F30D}\n\nKoi bhi sawaal puch sakte ho internet ke baare mein! \u{1F60A}";
+  if (/(capital of india|bharat ki rajdhani|india capital|india ki capital)/.test(m))
     return "Bharat ki rajdhani **New Delhi** hai! \u{1F1EE}\u{1F1F3}\u{1F60A}";
-  if (/(pakistan ki rajdhani|capital of pakistan)/.test(m))
+  if (/(pakistan ki rajdhani|capital of pakistan|pakistan capital)/.test(m))
     return "Pakistan ki rajdhani **Islamabad** hai! \u{1F1F5}\u{1F1F0}\u{1F60A}";
-  if (/(sun rise|suraj kahan|sunrise|sunset)/.test(m))
+  if (/(capital of usa|america ki rajdhani|washington)/.test(m))
+    return "USA ki rajdhani **Washington D.C.** hai! \u{1F1FA}\u{1F1F8}\u{1F60A} (New York nahi \u2014 yeh capital nahi hai!)";
+  if (/(capital of uk|england|britain).*(capital|rajdhani)/.test(m))
+    return "United Kingdom ki rajdhani **London** hai! \u{1F1EC}\u{1F1E7}\u{1F60A}";
+  if (/(capital of china|china ki rajdhani)/.test(m))
+    return "China ki rajdhani **Beijing (Peking)** hai! \u{1F1E8}\u{1F1F3}\u{1F60A}";
+  if (/(longest river|sabse lambi nadi|nile|amazon)/.test(m))
+    return "Duniya ki sabse lambi nadi **Nile River** hai (Africa, ~6,650 km)! \u{1F30A}\u2728\nIndia ki sabse lambi nadi **Ganga** hai! \u{1F64F}\u{1F30A}";
+  if (/(sun rise|suraj kahan|sunrise direction)/.test(m))
     return "Suraj **Purv (East)** mein ugta hai aur **Paschim (West)** mein duba hai! \u2600\uFE0F\u{1F305}";
   if (/(earth|dharti|prithvi).*(gol|round|shape)/.test(m) || /(gol|round).*(earth|dharti)/.test(m))
-    return "Dharti ka aakar **Geoid** hai \u2014 thoda flat gola! \u{1F30D}\u2728";
+    return "Dharti ka aakar **Geoid** hai \u2014 thoda flat gola (poles pe thoda\uB0A9\uC791)! \u{1F30D}\u2728 Radius ~6,371 km hai!";
+  if (/(largest|sabse bada).*(country|desh|nation)/.test(m))
+    return "Duniya ka sabse bada desh area mein **Russia** hai! \u{1F30D}\u2728 (~17 million km\xB2)\nAbaadi mein **China aur India** sabse aage hain! \u{1F1E8}\u{1F1F3}\u{1F1EE}\u{1F1F3}";
+  if (/(largest|sabse badi).*(continent|mahadeep)/.test(m))
+    return "Duniya ki sabse badi mahadeep **Asia** hai! \u{1F30F}\u2728 Isme India, China, Japan, Russia, Arab countries \u2014 sab aate hain!";
+  if (/(tallest|sabse uncha|highest).*(mountain|pahad|peak|everest)/.test(m))
+    return "Duniya ka sabse uncha pahad **Mount Everest** hai \u2014 **8,848.86 meters** uncha! \u{1F3D4}\uFE0F\u2728\nYeh Nepal aur Tibet ki seema par hai. Edmund Hillary pehle insan the jo 1953 mein chadhe!";
+  if (/(ocean|mahasagar|samundar).*(kitne|how many|largest|deepest)/.test(m))
+    return "Duniya mein **5 Mahasagar (Oceans)** hain! \u{1F30A}\u2728\n1. Pacific (sabse bada)\n2. Atlantic\n3. Indian Ocean (Hindi Mahasagar)\n4. Arctic\n5. Southern Ocean\n\nSabse gehra trench **Mariana Trench** (~11,000m) hai! \u{1F531}";
   if (/(pm|prime minister).*(india|bharat)/.test(m) || /(bharat|india).*(pm|pradhan mantri)/.test(m))
-    return "Abhi Bharat ke Prime Minister **Narendra Modi** ji hain! \u{1F1EE}\u{1F1F3}\u2728";
+    return "Abhi Bharat ke Prime Minister **Narendra Modi** ji hain! \u{1F1EE}\u{1F1F3}\u2728 Woh 2014 se PM hain.";
+  if (/(president|rashtrapati).*(india|bharat)/.test(m))
+    return "Abhi Bharat ki Rashtrapati **Smt. Droupadi Murmu** ji hain! \u{1F1EE}\u{1F1F3}\u2728 Woh Bharat ki pehli Adivasi mahila Rashtrapati hain!";
   if (/(chandrayaan).*(3|teen|launch|kab)/.test(m) || /(chandrayaan[ -]3)/.test(m))
-    return "Chandrayaan-3 **14 July 2023** ko launch hua tha aur **23 August 2023** ko Chandrayaan-3 ka lander **Vikram** Moon ke South Pole pe successfully utara! \u{1F680}\u{1F319} Bharat pehla desh bana jo Moon ke South Pole pe pahuncha! \u{1F1EE}\u{1F1F3}\u2728 Jai Ho ISRO! \u{1F389}";
-  if (/(isro|chandrayan|mangalyaan|aditya)/.test(m))
-    return "ISRO (Indian Space Research Organisation) Bharat ki space agency hai! \u{1F680}\u{1F1EE}\u{1F1F3} Inke bade kaam: Chandrayaan (Moon), Mangalyaan (Mars), Aditya-L1 (Sun). ISRO duniya ki best space agencies mein se ek hai! \u2728";
-  if (/(water|paani|h2o).*(formula|molecule|bana)/.test(m) || /(h2o)/.test(m))
-    return "Paani ka chemical formula **H\u2082O** hai! \u{1F4A7} Matlab 2 Hydrogen + 1 Oxygen atom milke paani banate hain! \u{1F52C}\u2728";
-  if (/(oxygen|pranavaayu).*(symbol|formula)/.test(m))
-    return "Oxygen ka symbol **O** hai aur molecular form **O\u2082** hai! \u{1F32C}\uFE0F\u2728";
-  if (/(india|bharat).*(independence|azaadi|swatantrata).*(day|din|kab)/.test(m))
-    return "Bharat **15 August 1947** ko azaad hua tha! \u{1F1EE}\u{1F1F3}\u{1F389} Pehle Prime Minister Pt. Jawaharlal Nehru ji the. Jai Hind! \u{1F1EE}\u{1F1F3}";
-  if (/(mahatma|bapu|gandhi ji).*(naam|janam|birthday|born)/.test(m))
-    return "Mahatma Gandhi ji ka poora naam **Mohandas Karamchand Gandhi** tha. Unka janam **2 October 1869** ko Porbandar, Gujarat mein hua tha! \u{1F54A}\uFE0F\u{1F64F} Unhe **Rashtrapitta** aur **Bapu** kaha jata hai! \u2728";
-  if (/(largest|sabse bada).*(country|desh|continent|mahadeep)/.test(m))
-    return "Duniya ka sabse bada desh **Russia** hai (area se) \u{1F30D} aur sabse badi mahadeep **Asia** hai! \u2728";
-  if (/(tallest|sabse uncha|highest).*(mountain|pahad|peak)/.test(m))
-    return "Duniya ka sabse uncha pahad **Mount Everest** hai \u2014 **8,848.86 meters** (29,031.7 feet) uncha! \u{1F3D4}\uFE0F\u2728 Yeh Nepal aur Tibet ki seema par hai!";
-  if (/(ipl|cricket).*(world cup|champion|winner|jitta)/.test(m))
-    return "Cricket ke baare mein koi specific sawaal puchho! \u{1F3CF}\u{1F60A} Main poori koshish karunga sahi jawab dene ki! \u2728";
-  if (/(bollywood|hindi film|movie|actor|actress)/.test(m))
-    return "Bollywood ke baare mein poochho! \u{1F3AC}\u{1F60A} Main actor, actress, movies, songs \u2014 sab ke baare mein bataunga! \u2728";
-  return `Main samjha nahi aapki baat. \u{1F914} Kripya dobara poochiye ya clearly batayein \u2014 main zaroor help karunga! \u{1F60A}\u2728`;
+    return "Chandrayaan-3 **14 July 2023** ko launch hua aur **23 August 2023** ko lander **Vikram** Moon ke South Pole pe utara! \u{1F680}\u{1F319}\u{1F1EE}\u{1F1F3}\nBharat duniya ka pehla desh bana jo Moon ke South Pole pe pahuncha! Jai ISRO! \u{1F389}";
+  if (/(isro|indian space|mangalyaan|aditya.l1)/.test(m))
+    return "ISRO (Indian Space Research Organisation) Bharat ki space agency hai! \u{1F680}\u{1F1EE}\u{1F1F3}\n\n\u{1F319} Chandrayaan \u2014 Moon\n\u{1F534} Mangalyaan \u2014 Mars\n\u2600\uFE0F Aditya-L1 \u2014 Sun\n\u{1F6F0}\uFE0F PSLV/GSLV \u2014 Satellite Launch\n\nISRO sabse low-cost space agency hai duniya mein! \u2728";
+  if (/(india|bharat).*(independence|azaadi|swatantrata).*(day|din|kab)/.test(m) || /(15 august)/.test(m))
+    return "Bharat **15 August 1947** ko Azaad hua! \u{1F1EE}\u{1F1F3}\u{1F389}\nPehle PM: Pt. Jawaharlal Nehru\nPehle Rashtrapati: Dr. Rajendra Prasad\nAzaadi ki ladaai mein Mahatma Gandhi, Bhagat Singh, Subhas Chandra Bose jaise neta the!\nJai Hind! \u{1F1EE}\u{1F1F3}";
+  if (/(republic day|26 january|gantantra diwas)/.test(m))
+    return "**26 January 1950** ko Bharat ka Constitution lagu hua aur Bharat ek **Gantantra** ban gaya! \u{1F1EE}\u{1F1F3}\u{1F389}\nIssi liye 26 January ko **Republic Day (Gantantra Diwas)** celebrate kiya jata hai! Parade Delhi mein hoti hai! \u2728";
+  if (/(mahatma|bapu|gandhi).*(naam|janam|birthday|born|father)/.test(m))
+    return "Mahatma Gandhi ji ka poora naam **Mohandas Karamchand Gandhi** tha! \u{1F54A}\uFE0F\u{1F64F}\nJanam: **2 October 1869**, Porbandar, Gujarat\nUnhe **Rashtrapitta** aur **Bapu** kehte hain\nAhimsa aur Satyagraha ke path par chale aur Bharat ko azaad karaya! \u2728";
+  if (/(bhagat singh|shaheed|shahid).*(kab|janam|born|birthday)/.test(m))
+    return "Shaheed **Bhagat Singh** ji ka janam **28 September 1907** ko Lyallpur (ab Pakistan) mein hua tha! \u{1F64F}\u2728\nUn par **23 March 1931** ko phaansi di gayi \u2014 Shaheed-e-Azam! Inquilaab Zindabad! \u{1F534}\u2B50";
+  if (/(mughal|mughals|akbar|aurangzeb|babar|shah jahan|taj mahal).*(history|itihas|kab|who|kaun)/.test(m))
+    return "Mughal Samrajya Bharat mein 1526-1857 tak raha! \u{1F54C}\u2728\n\n\u{1F451} Babar \u2192 Humayun \u2192 Akbar (Mahan) \u2192 Jahangir \u2192 Shah Jahan (Taj Mahal banaya) \u2192 Aurangzeb\n\n**Akbar** sabse bada Mughal ruler maana jata hai! \u{1F4DC}";
+  if (/(water|paani|h2o).*(formula|molecule|chemical)/.test(m) || /\bh2o\b/.test(m))
+    return "Paani ka chemical formula **H\u2082O** hai! \u{1F4A7}\u{1F52C}\n2 Hydrogen + 1 Oxygen = Paani!\nYeh duniya ka sabse zaroori compound hai! \u2728";
+  if (/(salt|namak|nacl).*(formula|chemical)/.test(m) || /\bnacl\b/.test(m))
+    return "Namak (Common Salt) ka chemical formula **NaCl** hai! \u{1F9C2}\u2728\nNa = Sodium + Cl = Chlorine milke Namak banate hain! \u{1F52C}";
+  if (/(oxygen|pranavaayu).*(symbol|formula|element)/.test(m))
+    return "Oxygen ka symbol **O** hai, molecular form **O\u2082** hai! \u{1F32C}\uFE0F\u2728\nHawa mein ~21% Oxygen hoti hai. Zindagi ke liye zaroori gas! \u{1F331}";
+  if (/(carbon dioxide|co2|karbon daai).*(formula|gas)/.test(m) || /\bco2\b/.test(m))
+    return "Carbon Dioxide ka formula **CO\u2082** hai! \u{1F33F}\u2728\nCarbon + 2 Oxygen = CO\u2082\nHum saans lete waqt CO\u2082 bahar nikalte hain. Plants ise absorb karte hain photosynthesis mein! \u{1F331}";
+  if (/(gold|sona).*(symbol|element|chemical)/.test(m))
+    return "Gold (Sona) ka chemical symbol **Au** hai! \u{1F947}\u2728\n(Latin: Aurum)\nAtomic Number: 79\nSabse valuable metals mein se ek! \u{1F4B0}";
+  if (/(iron|loha).*(symbol|element|chemical)/.test(m))
+    return "Iron (Loha) ka chemical symbol **Fe** hai! \u2699\uFE0F\u2728\n(Latin: Ferrum)\nAtomic Number: 26\nSteel iron se hi banta hai! \u{1F529}";
+  if (/(periodic table|elements|atomic number)/.test(m))
+    return "Periodic Table mein abhi **118 elements** hain! \u2697\uFE0F\u2728\n\nKuch important ones:\n\u2022 H = Hydrogen (1)\n\u2022 O = Oxygen (8)\n\u2022 C = Carbon (6)\n\u2022 Fe = Iron (26)\n\u2022 Au = Gold (79)\n\nMendeleev ne 1869 mein Periodic Table banaya tha! \u{1F52C}";
+  if (/(fever|bukhar|temperature).*(normal|kitna|how much)/.test(m))
+    return "Normal body temperature **98.6\xB0F (37\xB0C)** hoti hai! \u{1F321}\uFE0F\u2728\n\n\u2022 99-100.4\xB0F = Low grade fever\n\u2022 100.4\xB0F+ = Fever\n\u2022 103\xB0F+ = High fever (doctor ke paas jao!)\n\nBukhar mein rest karo, paani piyo! \u{1F48A}\u{1F60A}";
+  if (/(bp|blood pressure|normal bp).*(normal|kitna|reading)/.test(m))
+    return "Normal Blood Pressure **120/80 mmHg** hota hai! \u2764\uFE0F\u2728\n\n\u2022 120/80 = Normal \u2705\n\u2022 130/80+ = High BP (Hypertension) \u26A0\uFE0F\n\u2022 90/60 se kam = Low BP \u26A0\uFE0F\n\nBP check karte rehna zaroori hai! \u{1F3E5}\u{1F60A}";
+  if (/(bollywood|hindi film|movie).*(biggest|sabse bada|hit|blockbuster)/.test(m))
+    return "Bollywood ke kuch All-Time Blockbusters! \u{1F3AC}\u2728\n\n\u{1F4B0} **Baahubali 2** \u2014 ~1800 Cr\n\u{1F4B0} **KGF Chapter 2** \u2014 ~1200 Cr\n\u{1F4B0} **RRR** \u2014 ~1000 Cr\n\u{1F4B0} **Dangal** \u2014 ~2000 Cr (worldwide)\n\nKaun sa movie dekhna chahte ho? \u{1F60A}";
+  if (/(ipl|cricket|team india|virat|rohit|dhoni)/.test(m))
+    return "Cricket ke baare mein poochho! \u{1F3CF}\u{1F60A}\n\nTeam India ke kuch stars:\n\u2022 **Virat Kohli** \u2014 King of Cricket \u{1F451}\n\u2022 **Rohit Sharma** \u2014 Current Captain \u{1F3AF}\n\u2022 **MS Dhoni** \u2014 Legendary Captain (retired) \u{1F3C6}\n\u2022 **Jasprit Bumrah** \u2014 World's Best Bowler \u{1F525}\n\nKoi specific sawaal hai? \u2728";
+  return "";
 }
 var SK_SYS = `You are SK, a smart AI assistant invented by Mr. Suraj Sir. Rules:
 1. ALWAYS reply in the EXACT SAME language the user writes in (Hindi\u2192Hindi, English\u2192English, Urdu\u2192Urdu, Hinglish\u2192Hinglish).
@@ -24272,6 +24346,39 @@ function pollPost(msg, model) {
     req.end();
   });
 }
+function getDDGAnswer(query) {
+  return new Promise((resolve, reject) => {
+    const q = encodeURIComponent(query.slice(0, 200));
+    const path = `/?q=${q}&format=json&no_redirect=1&no_html=1&skip_disambig=1`;
+    const req = https.request({
+      hostname: "api.duckduckgo.com",
+      path,
+      method: "GET",
+      headers: { "User-Agent": "SK-AI/3.0", "Accept": "application/json" }
+    }, (res) => {
+      let d = "";
+      res.on("data", (c) => d += c);
+      res.on("end", () => {
+        try {
+          const j = JSON.parse(d);
+          const ans = (j.AbstractText || j.Answer || j.Definition || "").trim();
+          const topic = j.RelatedTopics?.[0]?.Text?.trim() || "";
+          const result = ans || topic;
+          if (result && result.length > 20) resolve(result.slice(0, 600));
+          else reject(new Error("no_ddg_result"));
+        } catch {
+          reject(new Error("ddg_parse"));
+        }
+      });
+    });
+    req.on("error", reject);
+    req.setTimeout(8e3, () => {
+      req.destroy();
+      reject(new Error("ddg_timeout"));
+    });
+    req.end();
+  });
+}
 async function getPollinationsReply(userMessage, _imageBase64) {
   if (_imageBase64) throw new Error("use_vision");
   const racers = [
@@ -24283,6 +24390,29 @@ async function getPollinationsReply(userMessage, _imageBase64) {
   const reply = await Promise.any(racers);
   if (reply && reply.length > 4) return reply;
   throw new Error("empty_reply");
+}
+async function getAIReply(userMessage) {
+  try {
+    const r = await getPollinationsReply(userMessage);
+    if (r && r.length > 4) return r;
+  } catch {
+  }
+  try {
+    const ddg = await getDDGAnswer(userMessage);
+    if (ddg && ddg.length > 20) {
+      return `${ddg} \u{1F60A}\u2728
+
+\u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
+    }
+  } catch {
+  }
+  const smart = getSmartFallback(userMessage);
+  if (smart && smart.length > 0) return smart;
+  return `Yeh sawaal thoda mushkil lag raha hai mujhe abhi! \u{1F914}\u{1F60A}
+
+Mere server pe thodi zyada load hai. Thodi der baad dobara poochho ya apna sawaal aur clearly likhein \u2014 main zaroor help karunga! \u{1F680}
+
+\u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
 }
 function extractTextFromImage(imageUrl) {
   return new Promise((resolve, reject) => {
@@ -24436,11 +24566,7 @@ Main SK hoon \u2014 Mr. Suraj Sir ka AI!
 Photo analysis abhi busy hai, thodi der baad try karo! \u{1F64F}`;
       }
     } else {
-      try {
-        reply = await getPollinationsReply(userMsg);
-      } catch {
-        reply = getSmartFallback(userMsg);
-      }
+      reply = await getAIReply(userMsg);
     }
     res.json({
       success: true,
@@ -24609,11 +24735,7 @@ Analysis mein thodi dikkat aayi. Kripya batayein is photo mein kya hai? Main hel
 \u2014 SK AI \u{1F916}`;
       }
     } else {
-      try {
-        reply = await getPollinationsReply(userMessage);
-      } catch {
-        reply = getSmartFallback(userMessage);
-      }
+      reply = await getAIReply(userMessage);
     }
     const finalReply = reply.trim();
     setCache(sender, msgKey, finalReply);
@@ -24625,7 +24747,8 @@ Analysis mein thodi dikkat aayi. Kripya batayein is photo mein kya hai? Main hel
       text: finalReply
     });
   } catch {
-    const fallback = getSmartFallback(req.body?.message || "");
+    const fallback = `Abhi thodi technical problem aa gayi! \u{1F914}\u{1F60A} Thodi der baad dobara bhejo \u2014 main ready hoon! \u{1F680}
+\u2014 SK AI \u{1F916}`;
     res.status(200).json({
       replies: [{ message: fallback }],
       reply: fallback,
