@@ -24653,24 +24653,34 @@ async function getAIReply(userMessage) {
     if (r && r.length > 3) return r;
   } catch {
   }
+  const isCreative = /\b(poem|shayari|story|kahani|joke|mazak|likho|likh|bana|banao|write|create|compose|geet|song|rap|nazm|doha)\b/i.test(userMessage);
   try {
     const r = await getPollinationsReply(userMessage);
     if (r && r.length > 4) return r;
   } catch {
+    if (isCreative) {
+      try {
+        const r2 = await getPollinationsReply(userMessage);
+        if (r2 && r2.length > 4) return r2;
+      } catch {
+      }
+    }
   }
-  try {
-    const ddg = await getDDGAnswer(userMessage);
-    if (ddg && ddg.length > 20) return `${ddg} \u{1F60A}
+  if (!isCreative) {
+    try {
+      const ddg = await getDDGAnswer(userMessage);
+      if (ddg && ddg.length > 20) return `${ddg} \u{1F60A}
 
 \u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
-  } catch {
-  }
-  try {
-    const wiki = await getWikipediaAnswer(userMessage);
-    if (wiki && wiki.length > 30) return `${wiki} \u{1F60A}
+    } catch {
+    }
+    try {
+      const wiki = await getWikipediaAnswer(userMessage);
+      if (wiki && wiki.length > 30) return `${wiki} \u{1F60A}
 
 \u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
-  } catch {
+    } catch {
+    }
   }
   const smart = getSmartFallback(userMessage);
   if (smart && smart.length > 0) return smart;
