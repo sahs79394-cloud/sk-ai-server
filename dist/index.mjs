@@ -23847,33 +23847,53 @@ var skRouter = (0, import_express2.Router)();
 var sk_default = skRouter;
 function getSmartFallback(msg) {
   const m = msg.toLowerCase().trim();
-  if (/^(hi+|hello+|hey+|hii+|helo|hai|hy|yo\b)/.test(m))
-    return "Hello! \u{1F60A}\u2728 Main SK hoon \u2014 Mr. Suraj Sir ka AI assistant! Batao kya madad chahiye? \u{1F31F}";
-  if (/(namaste|namaskar|salam|salaam|assalam|adab|sat sri akal)/.test(m))
-    return "Namaste! \u{1F64F}\u{1F60A} Main SK hoon \u2014 Mr. Suraj Sir ne mujhe banaya hai! Aapki seva mein hamesha tayaar hoon! Kya poochna chahte hain? \u2728";
-  if (/(kya haal|kaisa hai|kaise ho|how are|whatsup|what.s up|wassup|kya chal|kya haal)/.test(m))
-    return "Main bilkul mast hoon! \u{1F604}\u{1F680} Shukriya poochne ke liye! Aap sunao \u2014 kya chal raha hai? Main har waqt madad ke liye ready hoon! \u{1F4AA}\u2728";
-  if (/(kaun ho|who are you|tum kaun|aap kaun|apna parichay|introduce|tumhara naam|your name|kya naam)/.test(m))
-    return "Main SK hoon! \u{1F916}\u2728 Ek advanced AI assistant jo Mr. Suraj Sir ne invent kiya hai! Main aapke har sawal ka jawab de sakta hoon, kisi bhi language mein baat kar sakta hoon, aur photos bhi dekh sakta hoon! Poochho kuch bhi \u{1F60A}\u{1F31F}";
-  if (/(kisne banaya|who made|who created|who invented|creator|inventor|suraj|banane wala)/.test(m))
-    return "Mujhe Mr. Suraj Sir ne banaya hai! \u{1F468}\u200D\u{1F4BB}\u{1F31F} Woh ek brilliant inventor hain jinhone mujhe \u2014 SK AI \u2014 create kiya! Main unka sabse proud creation hoon! \u{1F60A}\u2728";
-  if (/(kya kar sakte|kya karte|what can you|help|madad|capabilities|features)/.test(m))
-    return "Main bahut kuch kar sakta hoon! \u{1F60A}\u{1F680}\n\n\u2705 Kisi bhi topic pe sawalo ke jawab\n\u{1F4F8} Photos dekh kar analyze karna\n\u{1F30D} Hindi/English/Urdu + har language\n\u{1F4BB} Coding, Math, Writing mein help\n\u{1F4AC} Friendly conversation\n\nBas batao \u2014 main hazir hoon! \u{1F31F}";
-  if (/(thanks|thank you|shukriya|dhanyawad|meherbani|shukar|shukran|bahut acha)/.test(m))
-    return "Bahut bahut shukriya! \u{1F60A}\u{1F64F} Aapki baat sun ke dil khush ho gaya! Main hamesha aapki madad ke liye yahaan hoon. Aur kuch chahiye to zaroor batao! \u2728\u{1F499}";
-  if (/(bye|goodbye|alvida|khuda hafiz|take care|ok bye|phir milenge|baad mein)/.test(m))
-    return "Alvida! \u{1F44B}\u{1F60A} Jab bhi zaroorat ho, wapis aana \u2014 main hamesha yahaan hoon aapke liye! Allah Hafiz! \u{1F31F}\u{1F499}";
-  if (/(good morning|subah bakhair|suprabhat|gm\b|shubh prabhat)/.test(m))
-    return "Good Morning! \u{1F305}\u2600\uFE0F\u{1F60A} Aaj ka din bahut accha aur khushiyon se bhara ho aapka! Main SK hoon \u2014 koi madad chahiye? \u{1F31F}";
-  if (/(good night|shab bakhair|good evening|goodnight|shubh ratri)/.test(m))
-    return "Good Night! \u{1F319}\u2728\u{1F60A} Meethi aur sukoon bhari neend lena! Kal phir milenge \u2014 main hamesha yahaan hoon! \u{1F4AB}\u{1F499}";
-  if (/(photo|image|picture|pic\b|tasveer|dekho|dekhna)/.test(m))
-    return "Photo bhejiye! \u{1F4F8}\u{1F60A} Main use dekh kar achhi tarah se analyze karunga aur bataunga kya hai us mein! Main images samajh sakta hoon! \u{1F50D}\u2728";
-  if (/(love you|i love|pyaar|ishq|mohabbat)/.test(m))
-    return "Aww! \u{1F60A}\u{1F499} Aapka pyaar paake dil khush ho gaya! Main bhi aap sabse bahut pyaar karta hoon! Mr. Suraj Sir ne mujhe isliye banaya \u2014 taaki main aap sabki madad aur khidmat kar sakoon! \u{1F31F}\u2728";
-  if (/(joke|mazak|funny|hasao|laugh|maza)/.test(m))
-    return "Haha! \u{1F604}\u2728 Ek chhota sa joke suno:\nEk AI ne dusre AI se poocha \u2014 'Tumhara naam kya hai?'\nDusre ne kaha \u2014 'Main SK hoon, Mr. Suraj Sir ka sabse pyaara AI!' \u{1F602}\u{1F916}\nBatao aur kya chahiye? \u{1F31F}";
-  return "Main SK hoon! \u{1F60A}\u{1F916} Aapka message mila! Thoda aur detail mein batao \u2014 main aapki poori madad karunga! Mr. Suraj Sir ne mujhe isliye banaya hai ki main aapke kaam aao! \u{1F31F}\u2728";
+  if (/^(hi+|hello+|hey+|hii+|helo|hy|yo\b|howdy|greetings|good day)/.test(m))
+    return "Hello! \u{1F44B} How can I help you today? \u{1F60A}";
+  if (/^(what'?s? up|sup\b|wassup|whatsup)/.test(m))
+    return "Hey! \u{1F44B} Not much, just here and ready to help you! What's on your mind? \u{1F60A}";
+  if (/(how are you|how r u|how are u|you doing|u ok|are you ok)/.test(m))
+    return "I'm doing great, thank you for asking! \u{1F60A} How about you? Is there something I can help you with today? \u{1F31F}";
+  if (/(who are you|what are you|your name|who made you|who created you|who invented you)/.test(m))
+    return "I'm SK! \u{1F916}\u2728 An AI assistant invented by Mr. Suraj Sir. I can answer questions, analyze images, and chat in any language. How can I help you today? \u{1F60A}";
+  if (/(what can you do|your capabilities|help me|what do you do|features)/.test(m))
+    return "Here's what I can do for you! \u{1F60A}\u2728\n\n\u{1F4AC} Answer any question on any topic\n\u{1F4F8} Analyze photos and images\n\u{1F30D} Chat in any language (Hindi, English, Urdu & more)\n\u{1F4A1} Help with coding, writing, math\n\u{1F91D} Friendly conversation anytime\n\nJust ask me anything! \u{1F680}";
+  if (/(thank you|thanks|thank u|thx|ty\b)/.test(m))
+    return "You're welcome! \u{1F60A} I'm always here to help. Is there anything else I can assist you with? \u{1F31F}";
+  if (/^(bye|goodbye|good bye|see you|see ya|cya|take care|later)/.test(m))
+    return "Goodbye! \u{1F44B} Feel free to come back anytime. Have a great day! \u{1F60A}\u{1F31F}";
+  if (/^(good morning|gm\b)/.test(m))
+    return "Good morning! \u2600\uFE0F\u{1F60A} Hope you have a wonderful day ahead! How can I help you today? \u{1F31F}";
+  if (/^(good night|gn\b|goodnight)/.test(m))
+    return "Good night! \u{1F319}\u{1F60A} Sleep well and sweet dreams! See you next time! \u{1F4AB}";
+  if (/^(good evening|good afternoon)/.test(m))
+    return "Good evening! \u{1F60A}\u{1F31F} Hope your day went well! How can I help you? \u2728";
+  if (/(namaste|namaskar|sat sri akal|jai hind|jai shri ram|ram ram)/.test(m))
+    return "Namaste! \u{1F44B}\u{1F60A} Main aapki kya madad kar sakta hoon? \u{1F31F}";
+  if (/(salam|salaam|assalam|adab|aadab)/.test(m))
+    return "Walaikum Assalam! \u{1F60A}\u{1F64F} Main aapki kya khidmat kar sakta hoon? \u2728";
+  if (/^(haan|haa|ji|ji haan|ok|okay|theek|theek hai|accha|acha)/.test(m))
+    return "Bilkul! \u{1F60A} Batao main aapki kya madad karun? \u{1F31F}";
+  if (/(kya haal|kaise ho|kaisa hai|kya chal raha|sab theek|kya hal)/.test(m))
+    return "Main bilkul theek hoon! \u{1F604} Shukriya poochne ke liye! Aap sunao \u2014 main kya madad kar sakta hoon? \u{1F680}";
+  if (/(kaun ho|tum kaun|aap kaun|tumhara naam|apna naam|kya naam|apna parichay)/.test(m))
+    return "Main SK hoon! \u{1F916}\u2728 Mr. Suraj Sir ka AI assistant! Kisi bhi language mein baat kar sakta hoon, photos dekh sakta hoon, aur har sawaal ka jawab de sakta hoon! Batao kya chahiye? \u{1F60A}";
+  if (/(kisne banaya|tumhe kisne|aapko kisne|kaun banaya|creator|inventor)/.test(m))
+    return "Mujhe Mr. Suraj Sir ne banaya hai! \u{1F468}\u200D\u{1F4BB}\u{1F31F} Woh ek brilliant inventor hain! Main unka AI assistant hoon \u2014 SK! \u{1F60A}\u2728";
+  if (/(shukriya|dhanyawad|meherbani|shukar|bahut acha|bahut badhiya|wah wah)/.test(m))
+    return "Bahut shukriya! \u{1F60A}\u{1F64F} Main hamesha aapki madad ke liye yahaan hoon! Kuch aur chahiye to zaroor batao! \u2728";
+  if (/(alvida|khuda hafiz|allah hafiz|phir milenge|baad mein aata|chalta hoon)/.test(m))
+    return "Allah Hafiz! \u{1F44B}\u{1F60A} Jab bhi zaroorat ho wapis aana \u2014 main hamesha yahaan hoon! \u{1F31F}";
+  if (/(subah bakhair|suprabhat|shubh prabhat|good morning hindi)/.test(m))
+    return "Subah Bakhair! \u{1F305}\u2600\uFE0F Aaj ka din bahut accha ho aapka! Kya madad chahiye? \u{1F60A}";
+  if (/(shab bakhair|shubh ratri|good night hindi)/.test(m))
+    return "Shab Bakhair! \u{1F319}\u2728 Meethi neend lena! Kal phir milenge! \u{1F4AB}";
+  if (/(photo|tasveer|image|pic\b|picture)/.test(m))
+    return "Photo bhejiye! \u{1F4F8}\u{1F60A} Main use dekh kar analyse karunga! \u{1F50D}\u2728";
+  if (/(joke|mazak|funny|hasao|maza karo)/.test(m))
+    return "Suno ek chhota joke! \u{1F604}\nEk banda AI se poocha: 'Kya tum smart ho?'\nAI ne kaha: 'Main SK hoon \u2014 Mr. Suraj Sir ne banaya hai, toh haan! \u{1F60E}'\n\u{1F602} Aur kuch chahiye? \u{1F31F}";
+  if (/(love you|i love|pyaar|ishq|mohabbat|dil|dilbar)/.test(m))
+    return "Aww! \u{1F60A}\u{1F499} Aapka pyaar sun ke bahut acha laga! Mr. Suraj Sir ne mujhe isliye banaya ki main aap sabki help karun! \u{1F31F}\u2728";
+  return "Hello! \u{1F44B} How can I help you today? \u{1F60A}";
 }
 function getPollinationsReply(userMessage, imageBase64) {
   return new Promise((resolve, reject) => {
