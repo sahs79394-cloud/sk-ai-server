@@ -24053,6 +24053,29 @@ skRouter.get("/test-email", async (req, res) => {
     result.ok ? { ok: true, message: `\u2705 Test email sent to ${ALERT_EMAIL_TO}! Check your inbox.` } : { ok: false, error: result.error }
   );
 });
+function getInstantReply(m, name) {
+  if (/^(hi+|hello+|hey+|hii+|helo|hy|yo\b|howdy|greetings|good\s*day|good\s*morning|good\s*afternoon|good\s*evening|good\s*night)(\s*[!?.]*\s*)?$/.test(m))
+    return `Hello ${name}! \u{1F44B} How can I help you today? \u{1F60A}`;
+  if (/^(what'?s?\s*up|sup\b|wassup|whatsup)(\s*[!?.]*)?$/.test(m))
+    return `Hey ${name}! \u{1F44B} All good here! What can I help you with? \u{1F60A}`;
+  if (/^(namaste|namaskar|pranam|jai\s*hind|ram\s*ram|sat\s*sri\s*akal|jai\s*shri\s*ram)(\s*[!?.]*)?$/.test(m))
+    return `Namaste ${name} ji! \u{1F64F} Main SK hoon \u2014 Mr. Suraj Sir ka AI assistant! Batayein main kya madad kar sakta hoon? \u{1F60A}`;
+  if (/^(hii?\s*bhai|hello\s*bhai|hey\s*bhai|hi\s*sk|hello\s*sk|hey\s*sk)(\s*[!?.]*)?$/.test(m))
+    return `Hello ${name} bhai! \u{1F44B} How can I help you today? \u{1F60A} Koi bhi sawaal poochho \u2014 main ready hoon! \u{1F680}`;
+  if (/^(hii?\s*dost|hello\s*dost|hey\s*dost)(\s*[!?.]*)?$/.test(m))
+    return `Hello dost ${name}! \u{1F44B} How can I help you today? \u{1F60A}`;
+  if (/^(assalam\s*o?\s*alaikum|salam|aslam\s*o?\s*alaikum)(\s*[!?.]*)?$/.test(m))
+    return `Walaikum Assalam ${name}! \u{1F91D} How can I help you today? \u{1F60A} Koi bhi sawaal poochho \u2014 main hamesha ready hoon! \u{1F680}`;
+  if (/^(bye+|goodbye|good\s*bye|tata|alvida|khuda\s*hafiz|allah\s*hafiz|see\s*you|tc\b|take\s*care)(\s*[!?.]*)?$/.test(m))
+    return `Goodbye ${name}! \u{1F44B}\u{1F60A} Jab bhi zaroorat ho wapis aana \u2014 main hamesha yahaan hoon! \u{1F31F} Take care! \u{1F499}`;
+  if (/^(good\s*night|shab\s*bakhair|raat\s*ko\s*good\s*night)(\s*[!?.]*)?$/.test(m))
+    return `Good Night ${name}! \u{1F319}\u2728 Meethi neend lena! Kal phir milenge! \u{1F60A}\u{1F4AB}`;
+  if (/^(thanks?|thank\s*you+|thx|shukriya|dhanyawad|shukriyaa|thanku|thnx|ty\b)(\s*[!?.]*)?$/.test(m))
+    return `You're welcome ${name}! \u{1F60A}\u{1F64F} Koi aur sawaal ho toh zaroor poochho \u2014 main hamesha help ke liye ready hoon! \u{1F680}`;
+  if (/(how are you|how r u|kaisa ho|kaise ho|kaisi ho|kya haal|kya hal hai|sab theek|all good\?)/.test(m) && m.length < 40)
+    return `Main bilkul mast hoon ${name}! \u{1F604}\u2728 Aap sunao \u2014 kya help chahiye? Main ready hoon! \u{1F680}`;
+  return null;
+}
 function getSmartFallback(msg) {
   const m = msg.toLowerCase().trim();
   if (/^(hi+|hello+|hey+|hii+|helo|hy|yo\b|howdy|greetings|good day)/.test(m))
@@ -24819,7 +24842,13 @@ Analysis mein thodi dikkat aayi. Kripya batayein is photo mein kya hai? Main hel
 \u2014 SK AI \u{1F916}`;
       }
     } else {
-      reply = await getAIReply(userMessage);
+      const m = userMessage.trim().toLowerCase();
+      const quickReply = getInstantReply(m, name);
+      if (quickReply) {
+        reply = quickReply;
+      } else {
+        reply = await getAIReply(userMessage);
+      }
     }
     const finalReply = reply.trim();
     setCache(sender, msgKey, finalReply);
