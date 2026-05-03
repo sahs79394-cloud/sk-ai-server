@@ -24422,7 +24422,7 @@ Answer ONLY what the user asked. Do NOT start with "Main SK hoon" or any self-in
 - Invented by Mr. Suraj Sir
 - Never say you are ChatGPT, Gemini, GPT-4, Claude, or any other AI`;
 var POLL_SYS = "You are SK AI, a powerful assistant by Mr. Suraj Sir. Give DETAILED, comprehensive answers \u2014 never one-liners. Use bullet points, headings, examples. Answer in the same language the user writes in. Be friendly, use emojis. Never give self-introduction unless asked.";
-function getPollinationsReply(msg) {
+function getPollinationsPost(msg) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
       model: "openai-fast",
@@ -24485,6 +24485,68 @@ function getPollinationsReply(msg) {
     req.write(body);
     req.end();
   });
+}
+function getPollinationsGet(msg) {
+  return new Promise((resolve, reject) => {
+    const prompt = encodeURIComponent(msg.slice(0, 500));
+    const system = encodeURIComponent(POLL_SYS);
+    const seed = Math.floor(Math.random() * 99999);
+    const path = `/${prompt}?model=openai-fast&system=${system}&seed=${seed}&json=false`;
+    const req = https.request({
+      hostname: "text.pollinations.ai",
+      path,
+      method: "GET",
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; SK-AI/3.0)" }
+    }, (res) => {
+      let data = "";
+      res.on("data", (c) => data += c);
+      res.on("end", () => {
+        const text = data.trim();
+        if (!text || text.length < 5) {
+          reject(new Error("empty"));
+          return;
+        }
+        if (text.startsWith("<!") || text.startsWith("<html") || text.startsWith("<HTML")) {
+          reject(new Error("html"));
+          return;
+        }
+        if (text.includes("legacy text API is being deprecated")) {
+          reject(new Error("deprecated"));
+          return;
+        }
+        if (text.startsWith("{") || text.startsWith("[")) {
+          try {
+            const j = JSON.parse(text);
+            if (j.error) {
+              reject(new Error("api_error"));
+              return;
+            }
+            const c = j?.choices?.[0]?.message?.content?.trim();
+            if (c && c.length > 4) {
+              resolve(c);
+              return;
+            }
+          } catch {
+          }
+        }
+        if (text.length > 4) resolve(text);
+        else reject(new Error("too_short"));
+      });
+    });
+    req.on("error", reject);
+    req.setTimeout(25e3, () => {
+      req.destroy();
+      reject(new Error("timeout"));
+    });
+    req.end();
+  });
+}
+function getPollinationsReply(msg) {
+  return Promise.any([
+    getPollinationsPost(msg),
+    getPollinationsPost(msg),
+    getPollinationsGet(msg)
+  ]);
 }
 function getGeminiReply(userMessage, imageBase64, imageMime) {
   return new Promise((resolve, reject) => {
