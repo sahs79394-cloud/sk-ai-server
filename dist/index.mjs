@@ -24617,7 +24617,7 @@ function getGeminiReply(userMessage, imageBase64, imageMime) {
   });
 }
 function cleanQueryForSearch(query) {
-  const cleaned = query.replace(/\b(kya|hai|hota|hoti|hote|hua|hui|hue|ho|kaise|kahan|kaun|kab|kyun|kyu|kyon|kyunki|ko|ka|ki|ke|se|me|mein|par|tha|thi|the|bhi|aur|ya|jo|jab|tab|phir|sirf|bahut|zyada|matlab|batao|explain|karo|do|dena|help|samjhao|bata|likho|hain|he|toh|to|acha|achha|sahi|galat|pls|please|thoda|bohot|bilkul|zaroor|wala|wali|wale|ap|aap|mera|meri|mujhe|humko|hum|mujko|unko|unhe|use|ise|iska|iski|iske|uska|uski|uske|yeh|ye|woh|wo|ek|aise|waisa|jaisa|kaisa|sab|sabhi|kuch|puri|poori|achhe|bure|nahi|nhi|mat|band|chalu|shuru|khatam|liye|liye)\b/gi, " ").replace(/\s+/g, " ").trim();
+  const cleaned = query.replace(/\b(kya|hai|hota|hoti|hote|hua|hui|hue|ho|kaise|kahan|kaun|kab|kyun|kyu|kyon|kyunki|ko|ka|ki|ke|se|me|mein|par|tha|thi|the|bhi|aur|ya|jo|jab|tab|phir|sirf|bahut|zyada|matlab|batao|explain|karo|do|dena|help|samjhao|bata|likho|hain|he|toh|to|acha|achha|sahi|galat|pls|please|thoda|bohot|bilkul|zaroor|wala|wali|wale|ap|aap|mera|meri|mujhe|humko|hum|mujko|unko|unhe|use|ise|iska|iski|iske|uska|uski|uske|yeh|ye|woh|wo|ek|aise|waisa|jaisa|kaisa|sab|sabhi|kuch|puri|poori|achhe|bure|nahi|nhi|mat|band|chalu|shuru|khatam|liye)\b/gi, " ").replace(/\b(code|program|script|likhna|likho|banao|bana|batao|example|example do|dikhao|chahiye)\b/gi, " ").replace(/\b(mein|python mein|javascript mein|java mein|c\+\+ mein|html mein|css mein)\b/gi, " ").replace(/\s+/g, " ").trim();
   return cleaned.length >= 3 ? cleaned : query;
 }
 function getDDGAnswer(query) {
@@ -24748,7 +24748,7 @@ async function getAIReply(userMessage) {
     if (poll && poll.length > 4) return poll;
   } catch {
   }
-  if (!isCreative && !isCode && !isAdvice) {
+  if (!isCreative && !isAdvice) {
     try {
       const ddg = await getDDGAnswer(userMessage);
       if (ddg && ddg.length > 20) return `${ddg} \u{1F60A}
