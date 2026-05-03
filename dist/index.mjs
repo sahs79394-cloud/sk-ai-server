@@ -24424,15 +24424,23 @@ Answer ONLY what the user asked. Do NOT start with "Main SK hoon" or any self-in
 var POLL_SYS = "You are SK AI, a powerful assistant by Mr. Suraj Sir. Give DETAILED, comprehensive answers \u2014 never one-liners. Use bullet points, headings, examples. Answer in the same language the user writes in. Be friendly, use emojis. Never give self-introduction unless asked.";
 function getPollinationsReply(msg) {
   return new Promise((resolve, reject) => {
-    const prompt = encodeURIComponent(msg.slice(0, 500));
-    const system = encodeURIComponent(POLL_SYS);
-    const seed = Math.floor(Math.random() * 99999);
-    const path = `/${prompt}?model=openai-fast&system=${system}&seed=${seed}&json=false`;
+    const body = JSON.stringify({
+      model: "openai-fast",
+      messages: [
+        { role: "system", content: POLL_SYS },
+        { role: "user", content: msg.slice(0, 1500) }
+      ],
+      seed: Math.floor(Math.random() * 99999)
+    });
     const req = https.request({
       hostname: "text.pollinations.ai",
-      path,
-      method: "GET",
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; SK-AI/3.0)" }
+      path: "/",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(body),
+        "User-Agent": "Mozilla/5.0 (compatible; SK-AI/3.0)"
+      }
     }, (res) => {
       let data = "";
       res.on("data", (c) => data += c);
@@ -24450,7 +24458,7 @@ function getPollinationsReply(msg) {
           reject(new Error("deprecated"));
           return;
         }
-        if (text.startsWith("{")) {
+        if (text.startsWith("{") || text.startsWith("[")) {
           try {
             const j = JSON.parse(text);
             if (j.error) {
@@ -24470,10 +24478,11 @@ function getPollinationsReply(msg) {
       });
     });
     req.on("error", reject);
-    req.setTimeout(2e4, () => {
+    req.setTimeout(25e3, () => {
       req.destroy();
       reject(new Error("timeout"));
     });
+    req.write(body);
     req.end();
   });
 }
