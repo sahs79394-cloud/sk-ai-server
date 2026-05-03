@@ -24671,13 +24671,11 @@ async function getAIReply(userMessage) {
   const isCode = /\b(code|program|script|function|algorithm|fibonacci|sorting|array|loop|class|object|debug|error|syntax|python|javascript|java|c\+\+|html|css|sql|query|api|server|backend|frontend)\b/i.test(userMessage);
   const isAdvice = /\b(tips|trick|tarika|kaise karen|kaise kare|batao|help|advice|suggest|improve|increase|decrease|lose weight|gain|boost|reduce|career|study|padhai|naukri|job|relationship|motivation)\b/i.test(userMessage);
   try {
-    const r = await getPollinationsReply(userMessage);
-    if (r && r.length > 4) return r;
-  } catch {
-  }
-  try {
-    const r2 = await getPollinationsReply(userMessage);
-    if (r2 && r2.length > 4) return r2;
+    const poll = await Promise.any([
+      getPollinationsReply(userMessage),
+      getPollinationsReply(userMessage)
+    ]);
+    if (poll && poll.length > 4) return poll;
   } catch {
   }
   if (!isCreative && !isCode && !isAdvice) {
