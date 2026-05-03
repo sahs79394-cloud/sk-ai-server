@@ -24416,95 +24416,59 @@ Answer ONLY what the user asked. Do NOT start with "Main SK hoon" or any self-in
 - Your name is SK
 - Invented by Mr. Suraj Sir
 - Never say you are ChatGPT, Gemini, GPT-4, Claude, or any other AI`;
-function pollGet(msg, model) {
+var POLL_SYS = "You are SK AI, a helpful assistant by Mr. Suraj Sir. Answer any question directly in the same language the user writes in. Be friendly, use emojis. Never give self-introduction unless asked.";
+function getPollinationsReply(msg) {
   return new Promise((resolve, reject) => {
-    const prompt = encodeURIComponent(msg.slice(0, 400));
-    const system = encodeURIComponent(SK_SYS);
-    const seed = Math.floor(Math.random() * 999999);
-    const path = `/${prompt}?model=${model}&system=${system}&seed=${seed}&json=false`;
+    const prompt = encodeURIComponent(msg.slice(0, 500));
+    const system = encodeURIComponent(POLL_SYS);
+    const seed = Math.floor(Math.random() * 99999);
+    const path = `/${prompt}?model=openai-fast&system=${system}&seed=${seed}&json=false`;
     const req = https.request({
       hostname: "text.pollinations.ai",
       path,
       method: "GET",
-      headers: { "User-Agent": "SK-AI/3.0" }
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; SK-AI/3.0)" }
     }, (res) => {
       let data = "";
       res.on("data", (c) => data += c);
       res.on("end", () => {
         const text = data.trim();
-        if (!text || text.length < 3 || text.startsWith("<!") || text.startsWith("<html")) {
+        if (!text || text.length < 5) {
           reject(new Error("empty"));
+          return;
+        }
+        if (text.startsWith("<!") || text.startsWith("<html") || text.startsWith("<HTML")) {
+          reject(new Error("html"));
+          return;
+        }
+        if (text.includes("legacy text API is being deprecated")) {
+          reject(new Error("deprecated"));
           return;
         }
         if (text.startsWith("{")) {
           try {
             const j = JSON.parse(text);
-            if (j.error || j.status === 429 || j.status === 503) {
-              reject(new Error("rate_limit"));
+            if (j.error) {
+              reject(new Error("api_error"));
               return;
             }
-            const c = j?.choices?.[0]?.message?.content;
-            if (c?.trim()) {
-              resolve(c.trim());
+            const c = j?.choices?.[0]?.message?.content?.trim();
+            if (c && c.length > 4) {
+              resolve(c);
               return;
             }
           } catch {
           }
         }
-        if (text.length > 3) resolve(text);
+        if (text.length > 4) resolve(text);
         else reject(new Error("too_short"));
       });
     });
     req.on("error", reject);
-    req.setTimeout(14e3, () => {
+    req.setTimeout(2e4, () => {
       req.destroy();
       reject(new Error("timeout"));
     });
-    req.end();
-  });
-}
-function pollPost(msg, model) {
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: SK_SYS },
-        { role: "user", content: msg.slice(0, 600) }
-      ],
-      seed: Math.floor(Math.random() * 999999)
-    });
-    const req = https.request({
-      hostname: "text.pollinations.ai",
-      path: "/openai",
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body), "User-Agent": "SK-AI/3.0" }
-    }, (res) => {
-      let data = "";
-      res.on("data", (c) => data += c);
-      res.on("end", () => {
-        try {
-          const j = JSON.parse(data.trim());
-          if (j.error || j.status === 429) {
-            reject(new Error("rate_limit"));
-            return;
-          }
-          const c = j?.choices?.[0]?.message?.content;
-          if (c?.trim()) {
-            resolve(c.trim());
-            return;
-          }
-          reject(new Error("no_content"));
-        } catch {
-          reject(new Error("parse_error"));
-        }
-      });
-    });
-    req.on("error", reject);
-    req.setTimeout(18e3, () => {
-      req.destroy();
-      reject(new Error("timeout"));
-    });
-    req.write(body);
     req.end();
   });
 }
@@ -24669,18 +24633,6 @@ function getWikipediaAnswer(query) {
     });
     req.end();
   });
-}
-async function getPollinationsReply(userMessage, _imageBase64) {
-  if (_imageBase64) throw new Error("use_vision");
-  const racers = [
-    pollGet(userMessage, "openai"),
-    pollGet(userMessage, "mistral"),
-    pollPost(userMessage, "openai-fast"),
-    pollGet(userMessage, "llama")
-  ];
-  const reply = await Promise.any(racers);
-  if (reply && reply.length > 4) return reply;
-  throw new Error("empty_reply");
 }
 async function getAIReply(userMessage) {
   try {
