@@ -24567,9 +24567,14 @@ function getGeminiReply(userMessage, imageBase64, imageMime) {
     req.end();
   });
 }
+function cleanQueryForSearch(query) {
+  const cleaned = query.replace(/\b(kya|hai|hota|hoti|hote|kaise|kahan|kaun|kab|kyun|kyunki|ko|ka|ki|ke|se|me|mein|par|tha|thi|the|bhi|aur|ya|jo|jab|tab|phir|sirf|bahut|zyada|matlab|batao|explain|karo|do|dena|help|samjhao|bata|likho|hain|he|toh|to|acha|achha|sahi|galat|pls|please|thoda|bohot|bilkul|zaroor|wala|wali|wale|ap|aap|mera|meri|mujhe|humko|hum)\b/gi, " ").replace(/\s+/g, " ").trim();
+  return cleaned.length >= 3 ? cleaned : query;
+}
 function getDDGAnswer(query) {
   return new Promise((resolve, reject) => {
-    const q = encodeURIComponent(query.slice(0, 200));
+    const cleanedQuery = cleanQueryForSearch(query);
+    const q = encodeURIComponent(cleanedQuery.slice(0, 200));
     const path = `/?q=${q}&format=json&no_redirect=1&no_html=1&skip_disambig=1`;
     const req = https.request({
       hostname: "api.duckduckgo.com",
@@ -24602,7 +24607,8 @@ function getDDGAnswer(query) {
 }
 function getWikipediaAnswer(query) {
   return new Promise((resolve, reject) => {
-    const q = encodeURIComponent(query.slice(0, 200));
+    const cleanedQuery = cleanQueryForSearch(query);
+    const q = encodeURIComponent(cleanedQuery.slice(0, 200));
     const searchPath = `/w/api.php?action=query&list=search&srsearch=${q}&format=json&srlimit=1&utf8=1`;
     const req = https.request({
       hostname: "en.wikipedia.org",
