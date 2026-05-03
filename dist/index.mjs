@@ -24890,12 +24890,49 @@ Photo analysis abhi busy hai, thodi der baad try karo! \u{1F64F}`;
     });
   }
 });
+function extractText(val) {
+  if (val === void 0 || val === null) return "";
+  if (typeof val === "string") return val.trim();
+  if (typeof val === "number" || typeof val === "boolean") return String(val).trim();
+  if (Array.isArray(val)) {
+    for (const item of val) {
+      const t = extractText(item);
+      if (t && t !== "[object Object]") return t;
+    }
+    return "";
+  }
+  if (typeof val === "object") {
+    const obj = val;
+    const subKeys = [
+      "text",
+      "body",
+      "message",
+      "content",
+      "data",
+      "value",
+      "msg",
+      "input",
+      "query",
+      "caption",
+      "answer",
+      "reply"
+    ];
+    for (const k of subKeys) {
+      const t = extractText(obj[k] ?? obj[k.toLowerCase()]);
+      if (t && t !== "[object Object]") return t;
+    }
+    const j = JSON.stringify(val);
+    return j && j !== "{}" && j.length < 500 ? "" : "";
+  }
+  return "";
+}
 function getField(body, ...keys) {
   const lowerBody = {};
   for (const k of Object.keys(body)) lowerBody[k.toLowerCase()] = body[k];
   for (const key of keys) {
     const val = body[key] ?? lowerBody[key.toLowerCase()];
-    if (val !== void 0 && val !== null && String(val).trim()) return String(val).trim();
+    const text = extractText(val);
+    if (text && text !== "[object Object]") return text;
   }
   return "";
 }
