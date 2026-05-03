@@ -24234,10 +24234,58 @@ Himmat ka daman tham jaao. \u{1F4AA}
     return "Pakistan ki rajdhani **Islamabad** hai! \u{1F1F5}\u{1F1F0}\u{1F60A}";
   if (/(capital of usa|america ki rajdhani|washington)/.test(m))
     return "USA ki rajdhani **Washington D.C.** hai! \u{1F1FA}\u{1F1F8}\u{1F60A} (New York nahi \u2014 yeh capital nahi hai!)";
-  if (/(capital of uk|england|britain).*(capital|rajdhani)/.test(m))
+  if (/(capital of uk|england|britain|united kingdom).*(capital|rajdhani)/.test(m) || /(uk|england|britain).*(capital|rajdhani)/.test(m))
     return "United Kingdom ki rajdhani **London** hai! \u{1F1EC}\u{1F1E7}\u{1F60A}";
-  if (/(capital of china|china ki rajdhani)/.test(m))
-    return "China ki rajdhani **Beijing (Peking)** hai! \u{1F1E8}\u{1F1F3}\u{1F60A}";
+  if (/(capital of china|china ki rajdhani|china.*(capital|rajdhani))/.test(m))
+    return "China ki rajdhani **Beijing** hai! \u{1F1E8}\u{1F1F3}\u{1F60A}";
+  if (/(capital of france|france.*(capital|rajdhani)|paris capital)/.test(m))
+    return "France ki rajdhani **Paris** hai! \u{1F1EB}\u{1F1F7}\u{1F60A}";
+  if (/(capital of russia|russia.*(capital|rajdhani))/.test(m))
+    return "Russia ki rajdhani **Moscow (Moskva)** hai! \u{1F1F7}\u{1F1FA}\u{1F60A}";
+  if (/(capital of japan|japan.*(capital|rajdhani))/.test(m))
+    return "Japan ki rajdhani **Tokyo** hai! \u{1F1EF}\u{1F1F5}\u{1F60A}";
+  if (/(capital of germany|germany.*(capital|rajdhani))/.test(m))
+    return "Germany ki rajdhani **Berlin** hai! \u{1F1E9}\u{1F1EA}\u{1F60A}";
+  if (/(capital of italy|italy.*(capital|rajdhani))/.test(m))
+    return "Italy ki rajdhani **Rome (Roma)** hai! \u{1F1EE}\u{1F1F9}\u{1F60A}";
+  if (/(capital of australia|australia.*(capital|rajdhani))/.test(m))
+    return "Australia ki rajdhani **Canberra** hai! \u{1F1E6}\u{1F1FA}\u{1F60A} (Sydney nahi \u2014 woh capital nahi hai!)";
+  if (/(capital of canada|canada.*(capital|rajdhani))/.test(m))
+    return "Canada ki rajdhani **Ottawa** hai! \u{1F1E8}\u{1F1E6}\u{1F60A} (Toronto nahi \u2014 woh capital nahi hai!)";
+  if (/(capital of brazil|brazil.*(capital|rajdhani))/.test(m))
+    return "Brazil ki rajdhani **Bras\xEDlia** hai! \u{1F1E7}\u{1F1F7}\u{1F60A}";
+  if (/(capital of saudi|saudi arabia.*(capital|rajdhani))/.test(m))
+    return "Saudi Arabia ki rajdhani **Riyadh** hai! \u{1F1F8}\u{1F1E6}\u{1F60A}";
+  if (/(capital of uae|dubai capital|emirates.*(capital|rajdhani))/.test(m))
+    return "UAE ki rajdhani **Abu Dhabi** hai! \u{1F1E6}\u{1F1EA}\u{1F60A} (Dubai capital nahi hai, lekin sabse bada shehar hai!)";
+  if (/(capital of nepal|nepal.*(capital|rajdhani))/.test(m))
+    return "Nepal ki rajdhani **Kathmandu** hai! \u{1F1F3}\u{1F1F5}\u{1F60A}";
+  if (/(capital of bangladesh|bangladesh.*(capital|rajdhani))/.test(m))
+    return "Bangladesh ki rajdhani **Dhaka** hai! \u{1F1E7}\u{1F1E9}\u{1F60A}";
+  if (/(capital of sri lanka|sri lanka.*(capital|rajdhani))/.test(m))
+    return "Sri Lanka ki rajdhani **Sri Jayawardenepura Kotte** hai (official), lekin **Colombo** sabse bada shehar hai! \u{1F1F1}\u{1F1F0}\u{1F60A}";
+  if (/(capital of afghanistan|afghanistan.*(capital|rajdhani))/.test(m))
+    return "Afghanistan ki rajdhani **Kabul** hai! \u{1F1E6}\u{1F1EB}\u{1F60A}";
+  if (/(capital of turkey|turkey.*(capital|rajdhani)|turkiye)/.test(m))
+    return "Turkey (T\xFCrkiye) ki rajdhani **Ankara** hai! \u{1F1F9}\u{1F1F7}\u{1F60A} (Istanbul capital nahi, lekin sabse bada shehar hai!)";
+  if (/(capital of egypt|egypt.*(capital|rajdhani)|misr)/.test(m))
+    return "Egypt (Misr) ki rajdhani **Cairo (Qaahira)** hai! \u{1F1EA}\u{1F1EC}\u{1F60A}";
+  if (/(capital of south africa|south africa.*(capital|rajdhani))/.test(m))
+    return "South Africa ki teen capitals hain! \u{1F1FF}\u{1F1E6}\u2728\n\u2022 **Pretoria** (executive)\n\u2022 **Cape Town** (legislative)\n\u2022 **Bloemfontein** (judicial)";
+  if (/(capital of spain|spain.*(capital|rajdhani))/.test(m))
+    return "Spain ki rajdhani **Madrid** hai! \u{1F1EA}\u{1F1F8}\u{1F60A}";
+  if (/(capital of mexico|mexico.*(capital|rajdhani))/.test(m))
+    return "Mexico ki rajdhani **Mexico City** hai! \u{1F1F2}\u{1F1FD}\u{1F60A}";
+  if (/(capital of argentina|argentina.*(capital|rajdhani))/.test(m))
+    return "Argentina ki rajdhani **Buenos Aires** hai! \u{1F1E6}\u{1F1F7}\u{1F60A}";
+  if (/(capital of iran|iran.*(capital|rajdhani))/.test(m))
+    return "Iran ki rajdhani **Tehran** hai! \u{1F1EE}\u{1F1F7}\u{1F60A}";
+  if (/(capital of iraq|iraq.*(capital|rajdhani))/.test(m))
+    return "Iraq ki rajdhani **Baghdad** hai! \u{1F1EE}\u{1F1F6}\u{1F60A}";
+  if (/(capital of north korea|north korea.*(capital|rajdhani))/.test(m))
+    return "North Korea ki rajdhani **Pyongyang** hai! \u{1F1F0}\u{1F1F5}\u{1F60A}";
+  if (/(capital of south korea|south korea.*(capital|rajdhani)|korea.*(capital|rajdhani))/.test(m))
+    return "South Korea ki rajdhani **Seoul** hai! \u{1F1F0}\u{1F1F7}\u{1F60A}";
   if (/(longest river|sabse lambi nadi|nile|amazon)/.test(m))
     return "Duniya ki sabse lambi nadi **Nile River** hai (Africa, ~6,650 km)! \u{1F30A}\u2728\nIndia ki sabse lambi nadi **Ganga** hai! \u{1F64F}\u{1F30A}";
   if (/(sun rise|suraj kahan|sunrise direction)/.test(m))
@@ -24552,6 +24600,69 @@ function getDDGAnswer(query) {
     req.end();
   });
 }
+function getWikipediaAnswer(query) {
+  return new Promise((resolve, reject) => {
+    const q = encodeURIComponent(query.slice(0, 200));
+    const searchPath = `/w/api.php?action=query&list=search&srsearch=${q}&format=json&srlimit=1&utf8=1`;
+    const req = https.request({
+      hostname: "en.wikipedia.org",
+      path: searchPath,
+      method: "GET",
+      headers: { "User-Agent": "SK-AI/3.0 (WhatsApp Bot; contact@example.com)", "Accept": "application/json" }
+    }, (res) => {
+      let d = "";
+      res.on("data", (c) => d += c);
+      res.on("end", () => {
+        try {
+          const j = JSON.parse(d);
+          const title = j?.query?.search?.[0]?.title;
+          if (!title) {
+            reject(new Error("no_wiki_result"));
+            return;
+          }
+          const titleEnc = encodeURIComponent(title);
+          const summaryPath = `/api/rest_v1/page/summary/${titleEnc}`;
+          const req2 = https.request({
+            hostname: "en.wikipedia.org",
+            path: summaryPath,
+            method: "GET",
+            headers: { "User-Agent": "SK-AI/3.0", "Accept": "application/json" }
+          }, (res2) => {
+            let d2 = "";
+            res2.on("data", (c) => d2 += c);
+            res2.on("end", () => {
+              try {
+                const j2 = JSON.parse(d2);
+                const extract = j2?.extract?.trim();
+                if (extract && extract.length > 30) {
+                  const sentences = extract.split(/(?<=[.!?])\s+/);
+                  const short = sentences.slice(0, 3).join(" ");
+                  resolve(short.slice(0, 500));
+                } else reject(new Error("wiki_empty"));
+              } catch {
+                reject(new Error("wiki_parse2"));
+              }
+            });
+          });
+          req2.on("error", reject);
+          req2.setTimeout(8e3, () => {
+            req2.destroy();
+            reject(new Error("wiki_timeout2"));
+          });
+          req2.end();
+        } catch {
+          reject(new Error("wiki_parse"));
+        }
+      });
+    });
+    req.on("error", reject);
+    req.setTimeout(8e3, () => {
+      req.destroy();
+      reject(new Error("wiki_timeout"));
+    });
+    req.end();
+  });
+}
 async function getPollinationsReply(userMessage, _imageBase64) {
   if (_imageBase64) throw new Error("use_vision");
   const racers = [
@@ -24576,9 +24687,15 @@ async function getAIReply(userMessage) {
   } catch {
   }
   try {
-    const ddg = await getDDGAnswer(userMessage);
-    if (ddg && ddg.length > 20) {
-      return `${ddg} \u{1F60A}\u2728
+    const [ddgResult, wikiResult] = await Promise.allSettled([
+      getDDGAnswer(userMessage),
+      getWikipediaAnswer(userMessage)
+    ]);
+    const ddg = ddgResult.status === "fulfilled" ? ddgResult.value : "";
+    const wiki = wikiResult.status === "fulfilled" ? wikiResult.value : "";
+    const best = ddg.length > wiki.length ? ddg : wiki;
+    if (best && best.length > 25) {
+      return `${best} \u{1F60A}\u2728
 
 \u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
     }
@@ -24586,14 +24703,7 @@ async function getAIReply(userMessage) {
   }
   const smart = getSmartFallback(userMessage);
   if (smart && smart.length > 0) return smart;
-  try {
-    const r2 = await getPollinationsReply(userMessage);
-    if (r2 && r2.length > 4) return r2;
-  } catch {
-  }
-  return `Maafi chahta hoon ${userMessage.length < 20 ? `"${userMessage}"` : ""} ka seedha answer abhi nahi de paya! \u{1F64F}
-
-Mujhe thoda aur detail mein poochho \u2014 main zaroor help karunga! \u{1F60A}
+  return `Yeh sawaal thoda complex hai! \u{1F914} Please zyada detail mein poochho ya sawaal ko simple karo \u2014 main zaroor help karunga! \u{1F60A}
 
 \u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
 }
