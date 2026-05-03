@@ -23886,38 +23886,38 @@ function sendAbusAlert(sender, name, message) {
   }).catch(() => {
   });
 }
-var NEGATIVE_WORDS = [
-  // English abusive
+var NEGATIVE_WORDS_EXACT = [
+  // English — full words only
   "fuck",
+  "fucker",
+  "fucking",
+  "fucked",
+  "fuckoff",
   "shit",
+  "shitty",
   "bitch",
+  "bitches",
   "bastard",
   "asshole",
-  "ass",
   "idiot",
-  "stupid",
-  "dumb",
   "moron",
   "retard",
-  "loser",
-  "trash",
-  "garbage",
-  "crap",
-  "damn",
-  "hell",
   "wtf",
   "stfu",
-  "shut up",
-  "hate you",
-  "kill you",
-  "die",
-  "ugly",
   "worthless",
   "useless",
   "pathetic",
   "disgusting",
-  // Hindi abusive (Roman script)
+  "loser",
+  "i hate you",
+  "hate you",
+  "kill you",
+  "kill yourself",
+  "shut up",
+  "shutup",
+  // Hindi/Hinglish — exact words
   "madarchod",
+  "mc",
   "bhadwa",
   "bhadwe",
   "bhosadi",
@@ -23933,40 +23933,31 @@ var NEGATIVE_WORDS = [
   "kamine",
   "kutte",
   "kuttey",
+  "kutti",
   "suar",
-  "saala",
-  "saale",
   "randi",
   "randiya",
-  "MC",
-  "BC",
-  "bakwaas",
-  "bekar",
-  "bekaar",
-  "besharam",
+  "bc",
   "nalayak",
-  "ullu",
-  "gadha",
-  "gadhey",
-  "gadhe",
   "bewakoof",
   "jaahil",
-  "ghanta",
+  "jhatu",
   "lund",
   "lauda",
-  "jhatu",
-  // Urdu abusive
+  "ghanta",
   "khanzir",
   "khanazir",
-  "harami",
   "haramzada",
-  "kutti"
+  "besharam",
+  "nikaamma",
+  "nikamma"
 ];
 function isNegativeMessage(message) {
-  const lower = message.toLowerCase();
-  return NEGATIVE_WORDS.some(
-    (w) => lower.includes(w.toLowerCase())
-  );
+  const lower = message.toLowerCase().trim();
+  return NEGATIVE_WORDS_EXACT.some((w) => {
+    const regex = new RegExp("(^|\\s|[^a-zA-Z])" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "($|\\s|[^a-zA-Z])", "i");
+    return regex.test(lower);
+  });
 }
 function getNegativeReply(name) {
   return `${name} ji, please polite language use karein. \u{1F64F}
