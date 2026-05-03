@@ -24458,6 +24458,10 @@ function getPollinationsPost(msg) {
           reject(new Error("deprecated"));
           return;
         }
+        if (/^error code:/i.test(text) || /^\d{3}\s*bad gateway/i.test(text)) {
+          reject(new Error("gateway_error"));
+          return;
+        }
         if (text.startsWith("{") || text.startsWith("[")) {
           try {
             const j = JSON.parse(text);
@@ -24512,6 +24516,10 @@ function getPollinationsGet(msg) {
         }
         if (text.includes("legacy text API is being deprecated")) {
           reject(new Error("deprecated"));
+          return;
+        }
+        if (/^error code:/i.test(text) || /^\d{3}\s*bad gateway/i.test(text)) {
+          reject(new Error("gateway_error"));
           return;
         }
         if (text.startsWith("{") || text.startsWith("[")) {
