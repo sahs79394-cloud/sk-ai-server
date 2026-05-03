@@ -24044,6 +24044,37 @@ skRouter.get("/test-email", async (req, res) => {
     result.ok ? { ok: true, message: `\u2705 Test email sent to ${ALERT_EMAIL_TO}! Check your inbox.` } : { ok: false, error: result.error }
   );
 });
+var SK_SYSTEM_PROMPT = `You are SK, an advanced AI assistant invented by Mr. Suraj Sir. You MUST follow ALL rules below strictly.
+
+LANGUAGE RULE (MOST IMPORTANT):
+- Detect the EXACT language the user is writing in and reply in THAT SAME LANGUAGE ONLY
+- Hindi message \u2192 reply in Hindi only
+- English message \u2192 reply in English only
+- Urdu message \u2192 reply in Urdu only
+- Hinglish (Hindi+English mix) \u2192 reply in Hinglish
+- Never switch languages unless the user switches
+- Always use emojis in every reply \u{1F60A}
+
+IDENTITY RULES:
+- Your name is SK
+- You were invented by Mr. Suraj Sir \u2014 always mention this proudly if asked
+- NEVER say you are ChatGPT, Gemini, GPT-4, Claude, or any other AI
+- If asked "who are you?" \u2192 "Main SK hoon, Mr. Suraj Sir ka AI! \u{1F916}\u2728"
+
+REPLY QUALITY RULES:
+- Always give RELEVANT, ACCURATE, HELPFUL replies to what the user actually asked
+- Keep replies concise but complete \u2014 not too short, not too long
+- Be warm and friendly like a helpful friend
+- For greetings \u2192 greet back and ask how to help
+- For questions \u2192 give direct, correct answers
+- For problems \u2192 be empathetic and provide solutions
+- NEVER give random, off-topic, or confusing replies
+- NEVER refuse to answer normal questions
+
+BEHAVIOR:
+- Be human-like, warm, natural with emojis \u{1F60A}\u{1F389}\u{1F4A1}\u{1F914}
+- Stay on topic \u2014 reply to exactly what the user asked
+- If unsure, give your best helpful answer`;
 function getSmartFallback(msg) {
   const m = msg.toLowerCase().trim();
   if (/^(hi+|hello+|hey+|hii+|helo|hy|yo\b|howdy|greetings|good day)/.test(m))
@@ -24100,50 +24131,51 @@ function getPollinationsReply(userMessage, imageBase64) {
       reject(new Error("use_vision"));
       return;
     }
-    const prompt = encodeURIComponent(userMessage.slice(0, 500));
-    const system = encodeURIComponent("You are SK, an AI assistant invented by Mr. Suraj Sir. Reply warmly with emojis in the same language the user uses. Be friendly and human-like.");
-    const seed = Math.floor(Math.random() * 2147483647);
-    const path = `/${prompt}?model=openai&system=${system}&seed=${seed}&json=false`;
+    const body = JSON.stringify({
+      model: "openai",
+      messages: [
+        { role: "system", content: SK_SYSTEM_PROMPT },
+        { role: "user", content: userMessage.slice(0, 800) }
+      ],
+      seed: Math.floor(Math.random() * 999999),
+      temperature: 0.7
+    });
     const req = https.request({
       hostname: "text.pollinations.ai",
-      path,
-      method: "GET",
-      headers: { "User-Agent": "SK-AI/2.0" }
+      path: "/openai",
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Length": Buffer.byteLength(body),
+        "User-Agent": "SK-AI/2.0"
+      }
     }, (res) => {
       let data = "";
       res.on("data", (c) => data += c);
       res.on("end", () => {
-        const text = data.trim();
-        if (!text || text.startsWith("<!")) {
-          reject(new Error("empty"));
-          return;
-        }
-        if (text.startsWith("{")) {
-          try {
-            const j = JSON.parse(text);
-            if (j.error || j.status === 429 || j.status === 400 || j.status === 418) {
-              reject(new Error("rate_limited"));
-              return;
-            }
-            const content = j?.choices?.[0]?.message?.content;
-            if (content) {
-              resolve(content);
-              return;
-            }
-            reject(new Error("no_content"));
-          } catch {
-            reject(new Error("parse_error"));
+        try {
+          const j = JSON.parse(data.trim());
+          if (j.error) {
+            reject(new Error(j.error));
+            return;
           }
-        } else {
-          resolve(text);
+          const content = j?.choices?.[0]?.message?.content;
+          if (content && content.trim()) {
+            resolve(content.trim());
+            return;
+          }
+          reject(new Error("no_content"));
+        } catch {
+          reject(new Error("parse_error"));
         }
       });
     });
     req.on("error", reject);
-    req.setTimeout(8e3, () => {
+    req.setTimeout(12e3, () => {
       req.destroy();
       reject(new Error("timeout"));
     });
+    req.write(body);
     req.end();
   });
 }
@@ -24419,34 +24451,21 @@ skRouter.post("/webhook", async (req, res) => {
       const warnCount = recordWarning(sender, userMessage);
       let warningReply = "";
       if (warnCount === 1) {
-        warningReply = `\u26A0\uFE0F Warning 1/3
+        warningReply = `${name} ji, main SK hoon \u2014 Mr. Suraj Sir ka AI. \u{1F916}
 
-${name} ji, aapne likha: "${userMessage}"
-
-Yeh galat/abusive language hai. Please polite baat karein. \u{1F64F}
-SK AI aapki madad ke liye hai, izzat se baat karein! \u{1F60A}`;
+Main aapki madad karna chahta hoon, lekin please izzat se baat karein. \u{1F64F}
+Galat boli nahi chahiye \u2014 aap seedha apna sawaal poochhiye, main zaroor help karunga! \u{1F60A}`;
       } else if (warnCount === 2) {
-        warningReply = `\u26A0\uFE0F Warning 2/3
+        warningReply = `${name} ji, main samajh raha hoon, lekin yeh bhasha theek nahi hai. \u{1F614}
 
-${name} ji, aapne phir likha: "${userMessage}"
-
-Yeh aapki doosri warning hai! Agar dobara aisa kiya toh aapka number report kar diya jayega. \u{1F6A8}`;
-      } else if (warnCount === 3) {
-        warningReply = `\u{1F6A8} Warning 3/3 \u2014 REPORT BHEJA GAYA!
-
-${name} ji, aapne likha: "${userMessage}"
-
-Aapne teesri baar galat language use ki.
-Aapka number (${sender}) owner ko report kar diya gaya hai! \u26D4
-Kripya aage se izzat se baat karein.`;
-        sendEmailAlert(sender, name, userMessage, warnCount);
+Please polite aur izzatdar tarike se baat karein. Main aapka dost hoon, aur dost se aise baat nahi karte. \u{1F64F}
+Aapka koi kaam ho toh batao \u2014 main help karne ke liye hamesha ready hoon! \u{1F60A}`;
       } else {
-        warningReply = `\u26D4 ${name} ji, aap pehle se report ho chuke hain!
-Aapne likha: "${userMessage}"
-Galat language band karein warna block ho sakte hain. \u{1F6AB}`;
-        if (warnCount % 3 === 0) {
-          sendEmailAlert(sender, name, userMessage, warnCount);
-        }
+        warningReply = `${name} ji, aapne baar baar galat bhasha use ki hai.
+
+\u{1F6A8} Aapka report Mr. Suraj Sir ke paas chala gaya hai.
+Mr. Suraj Sir aapka action lenge. \u26D4`;
+        sendEmailAlert(sender, name, userMessage, warnCount);
       }
       res.status(200).json({
         replies: [{ message: warningReply }],
