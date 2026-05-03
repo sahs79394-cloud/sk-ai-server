@@ -24026,6 +24026,15 @@ function isNegativeMessage(message) {
 }
 var skRouter = (0, import_express2.Router)();
 var sk_default = skRouter;
+skRouter.get("/test-ai", async (req, res) => {
+  const msg = req.query.msg || "What is 2+2?";
+  try {
+    const reply = await getPollinationsReply(msg);
+    res.json({ ok: true, message: msg, reply });
+  } catch (err) {
+    res.json({ ok: false, message: msg, error: err?.message });
+  }
+});
 skRouter.get("/test-email", async (req, res) => {
   if (!RESEND_API_KEY) {
     res.json({ ok: false, error: "RESEND_API_KEY not set in Railway env vars" });
@@ -24100,11 +24109,11 @@ function getPollinationsReply(userMessage, imageBase64) {
       reject(new Error("use_vision"));
       return;
     }
-    const sysPrompt = `You are SK, an AI assistant invented by Mr. Suraj Sir. CRITICAL: Always reply in the EXACT SAME LANGUAGE as the user. Hindi\u2192Hindi, English\u2192English, Urdu\u2192Urdu, Hinglish\u2192Hinglish. Always use emojis. Give accurate, helpful, on-topic replies. Never say you are ChatGPT or any other AI \u2014 you are SK by Mr. Suraj Sir.`;
-    const prompt = encodeURIComponent(userMessage.slice(0, 400));
+    const sysPrompt = `You are SK, an AI invented by Mr. Suraj Sir. Reply in SAME language as user (Hindi\u2192Hindi, English\u2192English, Urdu\u2192Urdu). Always use emojis. Give helpful, accurate answers.`;
+    const prompt = encodeURIComponent(userMessage.slice(0, 300));
     const system = encodeURIComponent(sysPrompt);
     const seed = Math.floor(Math.random() * 999999);
-    const path = `/${prompt}?model=openai&system=${system}&seed=${seed}&json=false&nofeed=true`;
+    const path = `/${prompt}?model=openai&system=${system}&seed=${seed}&json=false`;
     const req = https.request({
       hostname: "text.pollinations.ai",
       path,
