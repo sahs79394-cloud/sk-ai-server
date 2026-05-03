@@ -24101,14 +24101,30 @@ function getSmartFallback(msg) {
     return "Suno ek chhota joke! \u{1F604}\nEk banda AI se poocha: 'Kya tum smart ho?'\nAI ne kaha: 'Main SK hoon \u2014 Mr. Suraj Sir ne banaya hai, toh haan! \u{1F60E}'\n\u{1F602} Aur kuch chahiye? \u{1F31F}";
   if (/(love you|i love|pyaar|ishq|mohabbat|dil|dilbar)/.test(m))
     return "Aww! \u{1F60A}\u{1F499} Aapka pyaar sun ke bahut acha laga! Mr. Suraj Sir ne mujhe isliye banaya ki main aap sabki help karun! \u{1F31F}\u2728";
-  return "Hello! \u{1F44B} How can I help you today? \u{1F60A}";
-}
-function getPollinationsReply(userMessage, imageBase64) {
-  return new Promise((resolve, reject) => {
-    if (imageBase64) {
-      reject(new Error("use_vision"));
-      return;
+  const mathMatch = m.match(/^[\s\d\+\-\*\/\^\(\)\.\%\s]+$/);
+  if (mathMatch) {
+    try {
+      const clean = m.replace(/[^0-9+\-*/.()%\s]/g, "");
+      const result = Function(`"use strict"; return (${clean})`)();
+      if (typeof result === "number" && isFinite(result))
+        return `${clean.trim()} = **${result}** \u{1F522}\u2728`;
+    } catch {
     }
+  }
+  if (/(capital of india|bharat ki rajdhani|india capital)/.test(m))
+    return "Bharat ki rajdhani **New Delhi** hai! \u{1F1EE}\u{1F1F3}\u{1F60A}";
+  if (/(pakistan ki rajdhani|capital of pakistan)/.test(m))
+    return "Pakistan ki rajdhani **Islamabad** hai! \u{1F1F5}\u{1F1F0}\u{1F60A}";
+  if (/(sun rise|suraj kahan|sunrise|sunset)/.test(m))
+    return "Suraj **Purv (East)** mein ugta hai aur **Paschim (West)** mein duba hai! \u2600\uFE0F\u{1F305}";
+  if (/(earth|dharti|prithvi).*(gol|round|shape)/.test(m) || /(gol|round).*(earth|dharti)/.test(m))
+    return "Dharti ka aakar **Geoid** hai \u2014 thoda\uB0A9\uC791\u093E gola! \u{1F30D}\u2728";
+  if (/(pm|prime minister).*(india|bharat)/.test(m) || /(bharat|india).*(pm|pradhan mantri)/.test(m))
+    return "Abhi Bharat ke Prime Minister **Narendra Modi** ji hain! \u{1F1EE}\u{1F1F3}\u2728";
+  return `Main samjha nahi aapki baat. \u{1F914} Kripya dobara poochiye ya clearly batayein \u2014 main zaroor help karunga! \u{1F60A}\u2728`;
+}
+function pollGet(userMessage) {
+  return new Promise((resolve, reject) => {
     const sysPrompt = `You are SK, an AI invented by Mr. Suraj Sir. Reply in SAME language as user (Hindi\u2192Hindi, English\u2192English, Urdu\u2192Urdu). Always use emojis. Give helpful, accurate answers.`;
     const prompt = encodeURIComponent(userMessage.slice(0, 300));
     const system = encodeURIComponent(sysPrompt);
@@ -24132,12 +24148,12 @@ function getPollinationsReply(userMessage, imageBase64) {
           try {
             const j = JSON.parse(text);
             if (j.error || j.status === 429 || j.status === 400) {
-              reject(new Error("api_error"));
+              reject(new Error("rate_limit"));
               return;
             }
-            const content = j?.choices?.[0]?.message?.content;
-            if (content) {
-              resolve(content.trim());
+            const c = j?.choices?.[0]?.message?.content;
+            if (c) {
+              resolve(c.trim());
               return;
             }
           } catch {
@@ -24147,12 +24163,70 @@ function getPollinationsReply(userMessage, imageBase64) {
       });
     });
     req.on("error", reject);
-    req.setTimeout(14e3, () => {
+    req.setTimeout(13e3, () => {
       req.destroy();
       reject(new Error("timeout"));
     });
     req.end();
   });
+}
+function pollPost(userMessage) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
+      model: "openai-fast",
+      messages: [
+        { role: "system", content: `You are SK, an AI by Mr. Suraj Sir. Reply in same language as user with emojis. Be helpful and accurate.` },
+        { role: "user", content: userMessage.slice(0, 500) }
+      ],
+      seed: Math.floor(Math.random() * 999999)
+    });
+    const req = https.request({
+      hostname: "text.pollinations.ai",
+      path: "/openai",
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(body), "User-Agent": "SK-AI/2.1" }
+    }, (res) => {
+      let data = "";
+      res.on("data", (c) => data += c);
+      res.on("end", () => {
+        try {
+          const j = JSON.parse(data.trim());
+          if (j.error) {
+            reject(new Error("api_error"));
+            return;
+          }
+          const c = j?.choices?.[0]?.message?.content;
+          if (c && !j.choices?.[0]?.message?.reasoning) {
+            resolve(c.trim());
+            return;
+          }
+          if (c) {
+            resolve(c.trim());
+            return;
+          }
+          reject(new Error("no_content"));
+        } catch {
+          reject(new Error("parse_error"));
+        }
+      });
+    });
+    req.on("error", reject);
+    req.setTimeout(18e3, () => {
+      req.destroy();
+      reject(new Error("timeout"));
+    });
+    req.write(body);
+    req.end();
+  });
+}
+async function getPollinationsReply(userMessage, imageBase64) {
+  if (imageBase64) throw new Error("use_vision");
+  try {
+    return await pollGet(userMessage);
+  } catch {
+  }
+  await new Promise((r) => setTimeout(r, 1500));
+  return await pollPost(userMessage);
 }
 function getPollinationsVisionReply(userMessage, imageUrl) {
   return new Promise((resolve, reject) => {
