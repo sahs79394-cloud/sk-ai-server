@@ -24190,8 +24190,9 @@ Himmat ka daman tham jaao. \u{1F4AA}
     } catch {
     }
   }
+  const hasMathOp = /[+\-*\/]/.test(msg.trim());
   const pureMath = m.replace(/[^0-9+\-*/.()%\s]/g, "").trim();
-  if (/^[\d\s\+\-\*\/\.\(\)\%]+$/.test(pureMath) && pureMath.length > 0) {
+  if (hasMathOp && /^[\d\s\+\-\*\/\.\(\)\%]+$/.test(pureMath) && pureMath.length > 0) {
     try {
       const result = Function(`"use strict"; return (${pureMath})`)();
       if (typeof result === "number" && isFinite(result)) {
@@ -24568,7 +24569,7 @@ function getGeminiReply(userMessage, imageBase64, imageMime) {
   });
 }
 function cleanQueryForSearch(query) {
-  const cleaned = query.replace(/\b(kya|hai|hota|hoti|hote|kaise|kahan|kaun|kab|kyun|kyunki|ko|ka|ki|ke|se|me|mein|par|tha|thi|the|bhi|aur|ya|jo|jab|tab|phir|sirf|bahut|zyada|matlab|batao|explain|karo|do|dena|help|samjhao|bata|likho|hain|he|toh|to|acha|achha|sahi|galat|pls|please|thoda|bohot|bilkul|zaroor|wala|wali|wale|ap|aap|mera|meri|mujhe|humko|hum)\b/gi, " ").replace(/\s+/g, " ").trim();
+  const cleaned = query.replace(/\b(kya|hai|hota|hoti|hote|hua|hui|hue|ho|kaise|kahan|kaun|kab|kyun|kyu|kyon|kyunki|ko|ka|ki|ke|se|me|mein|par|tha|thi|the|bhi|aur|ya|jo|jab|tab|phir|sirf|bahut|zyada|matlab|batao|explain|karo|do|dena|help|samjhao|bata|likho|hain|he|toh|to|acha|achha|sahi|galat|pls|please|thoda|bohot|bilkul|zaroor|wala|wali|wale|ap|aap|mera|meri|mujhe|humko|hum|mujko|unko|unhe|use|ise|iska|iski|iske|uska|uski|uske|yeh|ye|woh|wo|ek|aise|waisa|jaisa|kaisa|sab|sabhi|kuch|puri|poori|achhe|bure|nahi|nhi|mat|band|chalu|shuru|khatam|liye|liye)\b/gi, " ").replace(/\s+/g, " ").trim();
   return cleaned.length >= 3 ? cleaned : query;
 }
 function getDDGAnswer(query) {
