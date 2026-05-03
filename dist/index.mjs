@@ -24681,6 +24681,8 @@ async function getAIReply(userMessage) {
     if (r && r.length > 3) return r;
   } catch {
   }
+  const smart = getSmartFallback(userMessage);
+  if (smart && smart.length > 0) return smart;
   try {
     const r = await getPollinationsReply(userMessage);
     if (r && r.length > 4) return r;
@@ -24693,17 +24695,15 @@ async function getAIReply(userMessage) {
     ]);
     const ddg = ddgResult.status === "fulfilled" ? ddgResult.value : "";
     const wiki = wikiResult.status === "fulfilled" ? wikiResult.value : "";
-    const best = ddg.length > wiki.length ? ddg : wiki;
-    if (best && best.length > 25) {
+    const best = ddg.length > 30 ? ddg : wiki;
+    if (best && best.length > 30) {
       return `${best} \u{1F60A}\u2728
 
 \u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
     }
   } catch {
   }
-  const smart = getSmartFallback(userMessage);
-  if (smart && smart.length > 0) return smart;
-  return `Yeh sawaal thoda complex hai! \u{1F914} Please zyada detail mein poochho ya sawaal ko simple karo \u2014 main zaroor help karunga! \u{1F60A}
+  return `Yeh sawaal thoda complex hai! \u{1F914} Please zyada detail mein poochho \u2014 main zaroor help karunga! \u{1F60A}
 
 \u2014 SK AI \u{1F916} by Mr. Suraj Sir`;
 }
